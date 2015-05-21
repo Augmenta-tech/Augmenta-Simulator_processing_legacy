@@ -16,7 +16,13 @@ import java.awt.geom.Point2D;
 import g4p_controls.*;
 import augmentaP5.*;
 
+// Detect when the mouse is outside the window (to detect resize)
+import java.awt.Point;
+import java.awt.MouseInfo;
+java.awt.Insets insets;
+
 AugmentaP5 augmenta;
+String addressString = "127.0.0.1";
 NetAddress sendingAddress;
 AugmentaPerson testPerson;
 GTextField portInput;
@@ -43,8 +49,17 @@ int unit = 65;
 int count;
 TestPerson[] persons;
 
+// Store the size of the scene to detect when it changes
+int oldWidth;
+int oldHeight;
+
 void setup() {
   size(640, 480);
+  oldWidth=width;
+  oldHeight=height;
+  frame.setResizable(true);
+  frame.pack();
+  smooth();
   frameRate(30);
 
   // Setup the array of TestPerson
@@ -66,7 +81,7 @@ void setup() {
 
   // Osc network com
   augmenta = new AugmentaP5(this, 50000);
-  sendingAddress = new NetAddress("192.168.1.21", oscPort);
+  sendingAddress = new NetAddress(addressString, oscPort);
   RectangleF rect = new RectangleF(0.4f, 0.4f, 0.2f, 0.2f);
   PVector pos = new PVector(0.5f, 0.5f);
   testPerson = new AugmentaPerson(pid, pos, rect);
@@ -88,9 +103,16 @@ void draw() {
 
   background(0);
 
+  // Change the grid if the slider has changed
   if (gridHasChanged && !mousePressed){
      updateGrid();
      gridHasChanged = false;
+  }
+  // Change the grid if the size of the window has changed
+  if (mouseIsInFrame() && (oldWidth!=width || oldHeight!=height) ){
+    oldWidth = width;
+    oldHeight = height;
+    updateGrid();
   }
 
   if (grid) {
@@ -168,11 +190,13 @@ void draw() {
 
   // Text
   textSize(14);
-  text("Drag mouse to send custom data to 127.0.0.1:"+oscPort, 10, 16);
+  text("Drag mouse to send custom data to "+addressString+":"+oscPort, 10, 16);
   text("Press [s] to toggle data sending", 10, 60);
   text("Press [m] to toggle automatic movement", 10, 75);
   text("Press [d] to toggle the draw on this window", 10, 90);
   text("Press [g] to toggle a grid of "+count+" persons", 10, 105);
+  //
+  text("Size of the scene :  "+width+"x"+height, 10, 160);
 }
 
 void mouseDragged() {
@@ -217,15 +241,19 @@ void keyPressed() {
     send=!send;
     if (send) {
       augmenta.sendSimulation(testPerson, sendingAddress, "personEntered");
-      // Send personWillLeave for the old grid
-      for (int i = 0; i < persons.length; i++) {
-        persons[i].send(augmenta, sendingAddress, "personEntered");
+      // Send personEntered for the grid
+      if(grid){
+        for (int i = 0; i < persons.length; i++) {
+          persons[i].send(augmenta, sendingAddress, "personEntered");
+        }
       }
     } else {
       augmenta.sendSimulation(testPerson, sendingAddress, "personWillLeave");
       // Send personWillLeave for the old grid
-      for (int i = 0; i < persons.length; i++) {
-        persons[i].send(augmenta, sendingAddress, "personWillLeave");
+      if(grid){
+        for (int i = 0; i < persons.length; i++) {
+          persons[i].send(augmenta, sendingAddress, "personWillLeave");
+        }
       }
     }
     pid = int(random(1000));
@@ -284,7 +312,7 @@ public void updateGrid(){
   
   int wideCount = width / unit;
   int highCount = height / unit;
-  
+  count = wideCount * highCount;
   persons = new TestPerson[count];
 
   // Create grid
@@ -296,5 +324,25 @@ public void updateGrid(){
       index++;
     }
   } 
+}
+
+// Check if the mouse is inside the frame
+boolean mouseIsInFrame() {
+  Point mouse = MouseInfo.getPointerInfo().getLocation();
+  Point win = frame.getLocation();
+
+  if(!frame.isUndecorated()){
+    //add borders of window
+    insets = frame.getInsets();
+    win.x += insets.left;
+    win.y += insets.top;
+  }
+  
+  boolean in = false;
+  if(mouse.x-win.x >= 20 && width-20 >= mouse.x-win.x)
+    if(mouse.y-win.y >= 20 && height-20 >= mouse.y-win.y)
+      in = true;
+
+  return in;
 }
 
