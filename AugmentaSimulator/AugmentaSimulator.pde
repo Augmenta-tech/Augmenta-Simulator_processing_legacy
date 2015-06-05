@@ -27,6 +27,7 @@ NetAddress sendingAddress;
 AugmentaPerson testPerson;
 GTextField portInput;
 GButton portInputButton;
+GButton broadcastButton;
 GSlider slider;
 
 float x, oldX = 0;
@@ -90,6 +91,7 @@ void setup() {
   // Set the UI
   portInput = new GTextField(this, 10, 22, 140, 20);
   portInputButton = new GButton(this, 150, 22, 140, 20, "Change Osc 'ip:port'");
+  broadcastButton = new GButton(this, 300, 22, 100, 20, "Broadcast");
   portInput.setText(addressString+":"+oscPort);
   slider = new GSlider(this, 8, 120, 270, 15, 15);
   G4P.registerSketch(this);
@@ -278,6 +280,8 @@ void keyPressed() {
 public void handleButtonEvents(GButton button, GEvent event) { 
   if (button == portInputButton) {
     handlePortInputButton();
+  } else if (button == broadcastButton) {
+    handleBroadcastButton();
   }
 }
 
@@ -297,6 +301,26 @@ public void handlePortInputButton() {
       sendingAddress = new NetAddress(addressString, oscPort);
     }
   }
+}
+
+public void handleBroadcastButton() {
+  
+  String[] ints = split(portInput.getText(), ':');
+  String ip = ints[0];
+  String port = ints[1];
+  if (Integer.parseInt(port) != oscPort || ip != addressString) {
+    println("input :"+ip+":"+port);
+    if (Integer.parseInt(port) > 1024 && Integer.parseInt(port) < 65535){
+      addressString="255.255.255.255";
+      oscPort = Integer.parseInt(port);
+      augmenta.unbind();
+      augmenta=null;
+      augmenta= new AugmentaP5(this, 50000);
+      sendingAddress = new NetAddress(addressString, oscPort);
+      portInput.setText(addressString+":"+oscPort);
+    }
+  }
+  
 }
 
 public void handleSliderEvents(GValueControl slider, GEvent event) {
