@@ -358,7 +358,11 @@ public void updateGrid(){
 
 // Check if the mouse is inside the frame
 boolean mouseIsInFrame() {
-  Point mouse = MouseInfo.getPointerInfo().getLocation();
+  Point mouse = new Point(0,0);
+  try{
+    mouse = MouseInfo.getPointerInfo().getLocation();
+  } catch(Exception e){
+  }
   Point win = frame.getLocation();
 
   if(!frame.isUndecorated()){
