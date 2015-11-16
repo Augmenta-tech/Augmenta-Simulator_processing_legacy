@@ -58,7 +58,7 @@ void setup() {
   size(640, 480);
   oldWidth=width;
   oldHeight=height;
-  frame.setResizable(true);
+  surface.setResizable(true);
   frame.pack();
   smooth();
   frameRate(30);
@@ -186,9 +186,14 @@ void draw() {
   }
   // Send scene
   sceneAge++;
+  // Warning : percentCovered and averageMotion are not implemented yet and replaced by random values
   float percentCovered = random(0.1)+0.2f;
-  Point2D.Float p = new Point2D.Float(2f+random(0.1), -2f+random(0.1));
-  augmenta.sendScene(width, height, 100, sceneAge, percentCovered, persons.length, p, sendingAddress);
+  Point2D.Float averageMotion = new Point2D.Float(2f+random(0.1), -2f+random(0.1));
+  // Compute the number of persons in the scene
+  int personsInScene = 1; // The "mouse" person
+  if (grid) personsInScene +=  persons.length; // + the grid if activated
+    
+  augmenta.sendScene(width, height, 100, sceneAge, percentCovered, personsInScene, averageMotion, sendingAddress);
 
   // Text
   textSize(14);
@@ -379,4 +384,3 @@ boolean mouseIsInFrame() {
 
   return in;
 }
-
