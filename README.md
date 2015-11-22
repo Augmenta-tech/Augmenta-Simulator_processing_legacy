@@ -1,7 +1,7 @@
 Augmenta simulator
 =======================
 
-Work without Augmenta hardware by simulating people moving in space.
+Work without Augmenta hardware by simulating people moving in space
 
 Use
 ---
@@ -13,7 +13,7 @@ Find other tools and docs here : [Augmenta wiki](https://github.com/Theoriz/Augm
 Dev
 ---
 
-Install the following libs.
+Install the following libs
 
 ```
 Sketch -> Import Library... -> OscP5 (needed dependency)
