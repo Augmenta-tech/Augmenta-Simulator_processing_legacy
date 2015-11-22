@@ -6,8 +6,8 @@ Simulate people moving in space and work without any Augmenta hardware.
 Use
 ---
 
-Download software here : [Augmenta-Simulator][https://github.com/Theoriz/Augmenta-Simulator/releases].
-Find other tools and docs here : [Augmenta wiki](https://github.com/Theoriz/Augmenta/wiki)
+Download software here : [Augmenta-Simulator](https://github.com/Theoriz/Augmenta-Simulator/releases).
+Find other tools and docs here : [Augmenta wiki](https://github.com/Theoriz/Augmenta/wiki).
 
 Dev
 ---
