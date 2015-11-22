@@ -37,13 +37,6 @@ Here is a presentation explaining how to use the API
 
 http://fr.slideshare.net/theoriz/augmentap5-api
 
-Contribute
-----------
-
-Check [TODO](TODO.md) and [TOFIX](TOFIX.md), then get [Eclipse][] to modify this library.
-
-Instructions are here : [https://github.com/processing/processing-library-template](https://github.com/processing/processing-library-template)
-
 Thanks
 ------
 
