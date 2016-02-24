@@ -13,8 +13,8 @@
 
 import netP5.*;
 import java.awt.geom.Point2D;
-import g4p_controls.*;
 import augmentaP5.*;
+import controlP5.*;
 
 // Detect when the mouse is outside the window (to detect resize)
 import java.awt.Point;
@@ -25,10 +25,22 @@ AugmentaP5 augmenta;
 String addressString = "127.0.0.1";
 NetAddress sendingAddress;
 AugmentaPerson testPerson;
-GTextField portInput;
-GButton portInputButton;
-GButton broadcastButton;
-GSlider slider;
+
+// ControlP5
+ControlP5 cp5;
+Textfield sceneX;
+Textfield sceneY;
+Textlabel sceneSizeInfo;
+Textfield portInput;
+CheckBox sendDataBox;
+CheckBox movingBox;
+CheckBox gridBox;
+Textfield gridCountBox;
+CheckBox drawBox;
+// Save/Load
+String defaultSettingsFile = "settings";
+// Key modifiers
+boolean cmdKey = true;
 
 float x, oldX = 0;
 float y, oldY = 0;
@@ -46,40 +58,41 @@ Boolean draw = true;
 Boolean gridHasChanged = false;
 
 // Array of TestPerson points
-int unit = 65;
-int count;
+int gridCount = 10;
 TestPerson[] persons;
 
 // Store the size of the scene to detect when it changes
 int oldWidth;
 int oldHeight;
 
+void settings(){
+  // Set the initial frame size
+  size(640, 480, P2D);
+  PJOGL.profile=1;
+}
+
 void setup() {
-  size(640, 480);
+  
+ 
+  // New GUI instance
+  cp5 = new ControlP5(this);
+  // Set the properties format : needed to save/load correctly
+  cp5.getProperties().setFormat(ControlP5.SERIALIZED);
+cp5.setUpdate(true);
+  // Set the UI
+  setUI();
+  loadSettings();
+  cp5.update();
+  
   oldWidth=width;
   oldHeight=height;
   surface.setResizable(true);
   frame.pack();
   smooth();
   frameRate(30);
-
-  // Setup the array of TestPerson
-  int wideCount = width / unit;
-  int highCount = height / unit;
-  count = wideCount * highCount;
-  persons = new TestPerson[count];
-
-  // Create grid
-  int index = 0;
-  for (int y = 0; y < highCount; y++) {
-    for (int x = 0; x < wideCount; x++) {
-      persons[index] = new TestPerson(x*unit, y*unit, unit/2, unit/2, random(0.05, 0.8), unit);
-      persons[index].p.oid = index; // set oid
-
-      index++;
-    }
-  }
-
+  
+  updateGrid();
+ 
   // Osc network com
   augmenta = new AugmentaP5(this, 50000);
   sendingAddress = new NetAddress(addressString, oscPort);
@@ -88,13 +101,7 @@ void setup() {
   testPerson = new AugmentaPerson(pid, pos, rect);
   testPerson.highest.z = random(0.4, 0.6);
 
-  // Set the UI
-  portInput = new GTextField(this, 10, 22, 140, 20);
-  portInputButton = new GButton(this, 150, 22, 140, 20, "Change Osc 'ip:port'");
-  broadcastButton = new GButton(this, 300, 22, 100, 20, "Broadcast");
-  portInput.setText(addressString+":"+oscPort);
-  slider = new GSlider(this, 8, 120, 270, 15, 15);
-  G4P.registerSketch(this);
+  
 
   // Init
   y=height/2;
@@ -104,18 +111,6 @@ void setup() {
 void draw() {
 
   background(0);
-
-  // Change the grid if the slider has changed
-  if (gridHasChanged && !mousePressed){
-     updateGrid();
-     gridHasChanged = false;
-  }
-  // Change the grid if the size of the window has changed
-  if (mouseIsInFrame() && (oldWidth!=width || oldHeight!=height) ){
-    oldWidth = width;
-    oldHeight = height;
-    updateGrid();
-  }
 
   if (grid) {
     // Update and draw the TestPersons
@@ -195,15 +190,6 @@ void draw() {
     
   augmenta.sendScene(width, height, 100, sceneAge, percentCovered, personsInScene, averageMotion, sendingAddress);
 
-  // Text
-  textSize(14);
-  text("Drag mouse to send custom data to "+addressString+":"+oscPort, 10, 16);
-  text("Press [s] to toggle data sending", 10, 60);
-  text("Press [m] to toggle automatic movement", 10, 75);
-  text("Press [d] to toggle the draw on this window", 10, 90);
-  text("Press [g] to toggle a grid of "+count+" persons", 10, 105);
-  //
-  text("Size of the scene :  "+width+"x"+height, 10, 160);
 }
 
 void mouseDragged() {
@@ -240,36 +226,45 @@ void mouseDragged() {
 }
 
 void keyPressed() {
-
+  if (keyCode == 157 || key == CONTROL){
+    cmdKey = true;
+  }
   // Stop/Start the movement of the point
-  if (key == 'm' || key == 'M') {
+  else if (key == 'm' || key == 'M') {
     moving=!moving;
   } else if (key == 's' || key == 'S') {
-    send=!send;
-    if (send) {
-      augmenta.sendSimulation(testPerson, sendingAddress, "personEntered");
-      // Send personEntered for the grid
-      if(grid){
-        for (int i = 0; i < persons.length; i++) {
-          persons[i].send(augmenta, sendingAddress, "personEntered");
-        }
-      }
+    if (cmdKey){
+      saveSettings();
     } else {
-      augmenta.sendSimulation(testPerson, sendingAddress, "personWillLeave");
-      // Send personWillLeave for the old grid
-      if(grid){
-        for (int i = 0; i < persons.length; i++) {
-          persons[i].send(augmenta, sendingAddress, "personWillLeave");
+      send=!send;
+      if (send) {
+        augmenta.sendSimulation(testPerson, sendingAddress, "personEntered");
+        // Send personEntered for the grid
+        if(grid){
+          for (int i = 0; i < persons.length; i++) {
+            persons[i].send(augmenta, sendingAddress, "personEntered");
+          }
+        }
+      } else {
+        augmenta.sendSimulation(testPerson, sendingAddress, "personWillLeave");
+        // Send personWillLeave for the old grid
+        if(grid){
+          for (int i = 0; i < persons.length; i++) {
+            persons[i].send(augmenta, sendingAddress, "personWillLeave");
+          }
         }
       }
+      pid = int(random(1000));
+      age = 0;
     }
-    pid = int(random(1000));
-    age = 0;
-  } else if (key == ENTER || key == RETURN) {
-    if (portInput.hasFocus() == true) {
-      handlePortInputButton();
+  } else if (keyCode == TAB){
+    if (sceneX.isFocus()){
+       sceneX.setFocus(false);
+       sceneY.setFocus(true);
     }
-  } else if (key == 'g' || key == 'G') {
+  } else if(key == 's'){
+   saveSettings("settings"); 
+  }else if (key == 'g' || key == 'G') {
     grid=!grid;
     if (!grid && send) {
       // Send personWillLeave for the old grid
@@ -282,82 +277,26 @@ void keyPressed() {
   }
 }
 
-public void handleButtonEvents(GButton button, GEvent event) { 
-  if (button == portInputButton) {
-    handlePortInputButton();
-  } else if (button == broadcastButton) {
-    handleBroadcastButton();
+void keyReleased(){
+  if (keyCode == 157 || key == CONTROL){
+    cmdKey = false;
   }
-}
-
-public void handlePortInputButton() {
-
-  String[] ints = split(portInput.getText(), ':');
-  String ip = ints[0];
-  String port = ints[1];
-  if (Integer.parseInt(port) != oscPort || ip != addressString) {
-    println("input :"+ip+":"+port);
-    if (Integer.parseInt(port) > 1024 && Integer.parseInt(port) < 65535){
-      addressString = ip;
-      oscPort = Integer.parseInt(port);
-      augmenta.unbind();
-      augmenta=null;
-      augmenta= new AugmentaP5(this, 50000);
-      sendingAddress = new NetAddress(addressString, oscPort);
-    }
-  }
-}
-
-public void handleBroadcastButton() {
-  
-  String[] ints = split(portInput.getText(), ':');
-  String ip = ints[0];
-  String port = ints[1];
-  if (Integer.parseInt(port) != oscPort || ip != addressString) {
-    println("input :"+ip+":"+port);
-    if (Integer.parseInt(port) > 1024 && Integer.parseInt(port) < 65535){
-      addressString="255.255.255.255";
-      oscPort = Integer.parseInt(port);
-      augmenta.unbind();
-      augmenta=null;
-      augmenta= new AugmentaP5(this, 50000);
-      sendingAddress = new NetAddress(addressString, oscPort);
-      portInput.setText(addressString+":"+oscPort);
-    }
-  }
-  
-}
-
-public void handleSliderEvents(GValueControl slider, GEvent event) {
-  unit = (int)((1-slider.getValueF())*120)+12;
-   // Setup the array of TestPerson
-  int wideCount = width / unit;
-  int highCount = height / unit;
-  count = wideCount * highCount;
-  println("count : "+count);
-  gridHasChanged = true;
 }
 
 public void updateGrid(){
   
   // Send personWillLeave for the old grid
-  for (int i = 0; i < persons.length; i++) {
-    persons[i].send(augmenta, sendingAddress, "personWillLeave");
+  if (persons != null){
+    for (int i = 0; i < persons.length; i++) {
+      persons[i].send(augmenta, sendingAddress, "personWillLeave");
+    }
   }
-  
-  int wideCount = width / unit;
-  int highCount = height / unit;
-  count = wideCount * highCount;
-  persons = new TestPerson[count];
+  persons = new TestPerson[gridCount];
 
   // Create grid
-  int index = 0;
-  for (int y = 0; y < highCount; y++) {
-    for (int x = 0; x < wideCount; x++) {
-      persons[index] = new TestPerson(x*unit, y*unit, unit/2, unit/2, random(0.05, 0.8), unit);
-      persons[index].p.oid = index; // set oid
-      index++;
-    }
+  for (int i = 0; i < gridCount ; i++) {
+      persons[i] = new TestPerson(random(0.1, 0.9), random(0.1, 0.9));
+      persons[i].p.oid = i; // set oid
   } 
 }
 
@@ -383,4 +322,246 @@ boolean mouseIsInFrame() {
       in = true;
 
   return in;
+}
+
+void showGUI(boolean val) {
+  // Show or hide the GUI after the Syphon output
+  portInput.setVisible(val);
+
+  sceneX.setVisible(val);
+  sceneY.setVisible(val);
+}
+
+void setUI() {
+  
+  // IP / Port input OSC
+  cp5.addTextlabel("labeloscport")
+      .setText("OSC input ip:port")
+      .setPosition(10, 16)
+      ;
+  portInput = cp5.addTextfield("changeInputAddress")
+     .setPosition(100,10)
+     .setSize(105,20)
+     .setAutoClear(false)
+     .setCaptionLabel("")
+     ;
+  portInput.setText(addressString+":"+oscPort);
+  cp5.addButton("forceBroadcast")
+     .setPosition(210,10)
+     .setSize(55,20)
+     .setCaptionLabel("Broadcast")
+     ;
+  cp5.addButton("forceLocal")
+     .setPosition(270,10)
+     .setSize(40,20)
+     .setCaptionLabel("Local")
+     ;      
+     
+  // CHANGE SCENE SIZE
+  sceneX = cp5.addTextfield("changeSceneWidth")
+     .setPosition(100,35)
+     .setSize(30,20)
+     .setAutoClear(false)
+     .setCaptionLabel("")
+     .setInputFilter(ControlP5.INTEGER);
+     ;
+  sceneX.setText(""+width);
+  sceneY = cp5.addTextfield("changeSceneHeight")
+     .setPosition(130,35)
+     .setSize(30,20)
+     .setAutoClear(false)
+     .setCaptionLabel("")
+     .setInputFilter(ControlP5.INTEGER);
+     ;
+  sceneY.setText(""+height);
+  cp5.addTextlabel("labelchangesize")
+      .setText("Change scene size")
+      .setPosition(10, 41)
+      ;
+      
+  // Data send
+  sendDataBox = cp5.addCheckBox("changeSendData")
+                .setPosition(10, 60)
+                .setSize(15, 15)
+                .addItem("Send data", 0)
+                ;
+  if(send){sendDataBox.activate(0);} else {sendDataBox.deactivate(0);}
+  
+  // Grid
+  gridBox = cp5.addCheckBox("changeGrid")
+                .setPosition(10, 85)
+                .setSize(15, 15)
+                .addItem("Activate grid", 0)
+                ;
+  if(grid){gridBox.activate(0);} else {gridBox.deactivate(0);}
+  gridCountBox = cp5.addTextfield("changeGridCount")
+     .setPosition(90,84)
+     .setSize(25,17)
+     .setAutoClear(false)
+     .setCaptionLabel("")
+     .setInputFilter(ControlP5.INTEGER)
+     .setText(""+gridCount)
+     ;
+  
+  // Move point
+  movingBox = cp5.addCheckBox("changeMoving")
+                .setPosition(10, 110)
+                .setSize(15, 15)
+                .addItem("Move the main point", 0)
+                ;
+  if(moving){movingBox.activate(0);} else {movingBox.deactivate(0);}
+  
+  // Move point
+  drawBox = cp5.addCheckBox("changeDraw")
+                .setPosition(10, 135)
+                .setSize(15, 15)
+                .addItem("Draw", 0)
+                ;
+  if(draw){drawBox.activate(0);} else {drawBox.deactivate(0);}
+}
+
+void changeInputAddress(String s){
+  String[] ints = split(s, ':');
+  String ip = ints[0];
+  String port = ints[1];
+  if (Integer.parseInt(port) != oscPort || ip != addressString) {
+    println("input :"+ip+":"+port);
+    if (Integer.parseInt(port) > 1024 && Integer.parseInt(port) < 65535){
+      addressString = ip;
+      oscPort = Integer.parseInt(port);
+      augmenta.unbind();
+      augmenta=null;
+      augmenta= new AugmentaP5(this, 50000);
+      sendingAddress = new NetAddress(addressString, oscPort);
+    }
+  }
+}
+
+void forceBroadcast(int v){
+  println("force broadcast");
+  String[] ints = split(portInput.getText(), ':');
+  
+  String ip = ints[0];
+  String port = ints[1];
+  int intPort;
+  try{
+   intPort = Integer.parseInt(port);
+  } catch (NumberFormatException e) {
+   intPort = 12000; 
+  }
+  if (intPort != oscPort || ip != addressString) {
+    println("input :"+ip+":"+port);
+    if (intPort > 1024 && intPort < 65535){
+      addressString="255.255.255.255";
+      oscPort = intPort;
+      augmenta.unbind();
+      augmenta=null;
+      augmenta= new AugmentaP5(this, 50000);
+      sendingAddress = new NetAddress(addressString, oscPort);
+      portInput.setText(addressString+":"+oscPort);
+    }
+  }
+}
+
+void forceLocal(int v){
+  println("force local");
+  String[] ints = split(portInput.getText(), ':');
+  
+  String ip = ints[0];
+  String port = ints[1];
+  int intPort;
+  try{
+   intPort = Integer.parseInt(port);
+  } catch (NumberFormatException e) {
+   intPort = 12000; 
+  }
+  if (intPort != oscPort || ip != addressString) {
+    println("input :"+ip+":"+port);
+    if (intPort > 1024 && intPort < 65535){
+      addressString="127.0.0.1";
+      oscPort = intPort;
+      augmenta.unbind();
+      augmenta=null;
+      augmenta= new AugmentaP5(this, 50000);
+      sendingAddress = new NetAddress(addressString, oscPort);
+      portInput.setText(addressString+":"+oscPort);
+    }
+  }
+}
+
+void changeSceneWidth(String s){
+  adjustSceneSize();
+}
+void changeSceneHeight(String s){
+  adjustSceneSize(); 
+}
+
+void changeSendData(float[] a) {
+  if(a[0] == 1){
+     send = true;
+  } else {
+    send = false;
+  }
+}
+
+void changeGrid(float[] a) {
+  if(a[0] == 1){
+    grid = true;
+  } else {
+    grid = false;
+  }
+}
+
+void changeGridCount(String s){
+  gridCount = (Integer.parseInt(s));
+  updateGrid();
+}
+  
+  
+void changeMoving(float[] a) {
+  if(a[0] == 1){
+    moving = true;
+  } else {
+    moving = false;
+  }
+}
+void changeDraw(float[] a) {
+  if(a[0] == 1){
+    draw = true;
+  } else {
+    draw = false;
+  }
+}
+void adjustSceneSize() {
+
+  int sw = Integer.parseInt(sceneX.getText());
+  int sh = Integer.parseInt(sceneY.getText());
+    
+  if ( (width!=sw || height!=sh) && sw>100 && sh>100 && sw<=16000 && sh <=16000 ) {
+    surface.setSize(sw+frame.getInsets().left+frame.getInsets().right, sh+frame.getInsets().top+frame.getInsets().bottom);
+  }
+}
+
+void saveSettings(String file){
+  /*
+  println("Saving to : "+file);
+  cp5.saveProperties(file);
+  */
+}
+void saveSettings(){
+  saveSettings(defaultSettingsFile);
+}
+
+void loadSettings(String file){
+  /*
+  println("Loading from : "+file);
+  cp5.loadProperties(file);
+  */
+}
+void loadSettings(){
+  loadSettings(defaultSettingsFile);
+}
+
+void stop(){
+ saveSettings("settings"); 
 }
