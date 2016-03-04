@@ -11,10 +11,13 @@
  *
  */
 
-import netP5.*;
-import java.awt.geom.Point2D;
-import augmentaP5.*;
-import controlP5.*;
+import netP5.*; // needed for augmenta
+import TUIO.*; // Needed for augmenta
+import augmentaP5.*; // Augmenta
+import codeanticode.syphon.*; // Syphon
+import java.util.List; // Needed for the GUI implementation
+import java.awt.geom.Point2D; // 2D points to send AugmentaPersons
+import controlP5.*; // GUI
 
 // Detect when the mouse is outside the window (to detect resize)
 import java.awt.Point;
@@ -24,6 +27,7 @@ java.awt.Insets insets;
 AugmentaP5 augmenta;
 String addressString = "127.0.0.1";
 NetAddress sendingAddress;
+boolean inputIsValid = true;
 AugmentaPerson testPerson;
 
 // ControlP5
@@ -32,11 +36,12 @@ Textfield sceneX;
 Textfield sceneY;
 Textlabel sceneSizeInfo;
 Textfield portInput;
-CheckBox sendDataBox;
-CheckBox movingBox;
-CheckBox gridBox;
+Textlabel inputError;
+Toggle sendDataBox;
+Toggle movingBox;
+Toggle gridBox;
 Textfield gridCountBox;
-CheckBox drawBox;
+Toggle drawBox;
 // Save/Load
 String defaultSettingsFile = "settings";
 // Key modifiers
@@ -61,9 +66,8 @@ Boolean gridHasChanged = false;
 int gridCount = 10;
 TestPerson[] persons;
 
-// Store the size of the scene to detect when it changes
-int oldWidth;
-int oldHeight;
+// Graphics that will hold the texture to draw
+PGraphics canvas;
 
 void settings(){
   // Set the initial frame size
@@ -73,21 +77,15 @@ void settings(){
 
 void setup() {
   
+  // Create the canvas that will be used to send the syphon output
+  canvas = createGraphics(width, height, P2D);
  
   // New GUI instance
   cp5 = new ControlP5(this);
-  // Set the properties format : needed to save/load correctly
-  cp5.getProperties().setFormat(ControlP5.SERIALIZED);
-cp5.setUpdate(true);
+  cp5.setUpdate(true);
   // Set the UI
   setUI();
-  loadSettings();
-  cp5.update();
   
-  oldWidth=width;
-  oldHeight=height;
-  surface.setResizable(true);
-  frame.pack();
   smooth();
   frameRate(30);
   
@@ -101,16 +99,19 @@ cp5.setUpdate(true);
   testPerson = new AugmentaPerson(pid, pos, rect);
   testPerson.highest.z = random(0.4, 0.6);
 
-  
-
   // Init
-  y=height/2;
-  x=width/2;
+  y=canvas.height/2;
+  x=canvas.width/2;
+  
+  loadSettings();
 }
 
 void draw() {
 
   background(0);
+  // Begin drawing the canvas
+  canvas.beginDraw();
+  canvas.background(0);
 
   if (grid) {
     // Update and draw the TestPersons
@@ -118,9 +119,9 @@ void draw() {
       persons[i].update();
       //persons[i].send(augmenta, sendingAddress);
       if (send) {
-        fill(255);
+        canvas.fill(255);
       } else {
-        fill(128);
+        canvas.fill(128);
       }
       if(draw){
         persons[i].draw();
@@ -135,20 +136,20 @@ void draw() {
     oldY = y;
     // Sin animation
     if (moving) {
-      x = map(sin(t), -1, 1, width/10, width*9/10);
+      x = map(sin(t), -1, 1, canvas.width/10, canvas.width*9/10);
     }
   }
   // Draw disk
   if (send) {
-    fill(255);
+    canvas.fill(255);
   } else {
-    fill(128);
+    canvas.fill(128);
   }
   if (draw){
-    ellipse(x, y, 20, 20);
+    canvas.ellipse(x, y, 20, 20);
     //rect(
-    textSize(16);
-    text(""+pid, x+20, y-10, 50, 20);
+    canvas.textSize(16);
+    canvas.text(""+pid, x+20, y-10, 50, 20);
   }
   
 
@@ -158,12 +159,12 @@ void draw() {
   age++;
 
   // Update point
-  testPerson.centroid.x = (float)x/width;
-  testPerson.centroid.y = (float)y/height;
-  testPerson.velocity.x = (x - oldX)/width;
-  testPerson.velocity.y = (y - oldY)/height;
-  testPerson.boundingRect.x = (float)x/width-0.1;
-  testPerson.boundingRect.y = (float)y/height-0.1;
+  testPerson.centroid.x = (float)x/canvas.width;
+  testPerson.centroid.y = (float)y/canvas.height;
+  testPerson.velocity.x = (x - oldX)/canvas.width;
+  testPerson.velocity.y = (y - oldY)/canvas.height;
+  testPerson.boundingRect.x = (float)x/canvas.width-0.1;
+  testPerson.boundingRect.y = (float)y/canvas.height-0.1;
   testPerson.highest.x = testPerson.centroid.x;
   testPerson.highest.y = testPerson.centroid.y;
   // Other values 
@@ -187,42 +188,43 @@ void draw() {
   // Compute the number of persons in the scene
   int personsInScene = 1; // The "mouse" person
   if (grid) personsInScene +=  persons.length; // + the grid if activated
-    
-  augmenta.sendScene(width, height, 100, sceneAge, percentCovered, personsInScene, averageMotion, sendingAddress);
+  augmenta.sendScene(canvas.width, canvas.height, 100, sceneAge, percentCovered, personsInScene, averageMotion, sendingAddress);
 
+  // Draw input error if needed
+  if(inputIsValid){
+    inputError.setVisible(false);
+  } else {
+    inputError.setVisible(true); 
+  }
+  
+  canvas.endDraw();
+  
+  // Draw the augmenta canvas in the window
+  if(draw){
+    image(canvas, 0, 0, width, height);
+  }
 }
 
 void mouseDragged() {
   oldX = x;
   oldY = y;
   // Update coords
-  x = mouseX;
-  y = mouseY;
+  x = (float)mouseX/(float)width*(float)canvas.width;
+  y = (float)mouseY/(float)height*(float)canvas.height;
 
   // The following code is here just for pure fun and aesthetic !
   // It enables the point to go on in its sinus road where
   // you left it !
 
   // Clamping
-  if (x>width*9/10)
-  {
-    x=width*9/10;
+  if (x>canvas.width*9/10){
+    x=canvas.width*9/10;
   }
-  if (x<width/10)
-  {
-    x=width/10;
+  if (x<canvas.width/10){
+    x=canvas.width/10;
   }
   // Reverse
-  t = asin(map(x, width/10, width*9/10, -1, 1));
-  // Don't do it visually
-  x = mouseX;
-  // Change direction by calculating speed vector
-  if (mouseX - pmouseX < 0)
-  {
-    direction = -1;
-  } else {
-    direction = 1;
-  }
+  t = asin(map(x, canvas.width/10, canvas.width*9/10, -1, 1));
 }
 
 void keyPressed() {
@@ -263,7 +265,9 @@ void keyPressed() {
        sceneY.setFocus(true);
     }
   } else if(key == 's'){
-   saveSettings("settings"); 
+   saveSettings(defaultSettingsFile); 
+  } else if(key == 'l'){
+    loadSettings(defaultSettingsFile);
   }else if (key == 'g' || key == 'G') {
     grid=!grid;
     if (!grid && send) {
@@ -296,6 +300,7 @@ public void updateGrid(){
   // Create grid
   for (int i = 0; i < gridCount ; i++) {
       persons[i] = new TestPerson(random(0.1, 0.9), random(0.1, 0.9));
+      persons[i].setGraphicsTarget(canvas);
       persons[i].p.oid = i; // set oid
   } 
 }
@@ -355,7 +360,11 @@ void setUI() {
      .setPosition(270,10)
      .setSize(40,20)
      .setCaptionLabel("Local")
-     ;      
+     ;    
+  inputError = cp5.addTextlabel("labelInputError")
+                  .setPosition(320, 16)
+                  .setText("Error : input not valid")
+                  ;
      
   // CHANGE SCENE SIZE
   sceneX = cp5.addTextfield("changeSceneWidth")
@@ -380,22 +389,30 @@ void setUI() {
       ;
       
   // Data send
-  sendDataBox = cp5.addCheckBox("changeSendData")
+  sendDataBox = cp5.addToggle("changeSendData")
                 .setPosition(10, 60)
                 .setSize(15, 15)
-                .addItem("Send data", 0)
+                .setLabel("");
                 ;
-  if(send){sendDataBox.activate(0);} else {sendDataBox.deactivate(0);}
+  if(send){sendDataBox.setState(true);} else {sendDataBox.setState(false);}
+  cp5.addTextlabel("labelSendData")
+      .setText("Send Data")
+      .setPosition(30, 63)
+      ;
   
   // Grid
-  gridBox = cp5.addCheckBox("changeGrid")
+  gridBox = cp5.addToggle("changeGrid")
                 .setPosition(10, 85)
                 .setSize(15, 15)
-                .addItem("Activate grid", 0)
+                .setLabel("");
                 ;
-  if(grid){gridBox.activate(0);} else {gridBox.deactivate(0);}
+  if(grid){gridBox.setState(true);} else {gridBox.setState(false);}
+  cp5.addTextlabel("labelGrid")
+      .setText("Activate grid with                    people")
+      .setPosition(30, 88)
+      ;
   gridCountBox = cp5.addTextfield("changeGridCount")
-     .setPosition(90,84)
+     .setPosition(115,84)
      .setSize(25,17)
      .setAutoClear(false)
      .setCaptionLabel("")
@@ -404,28 +421,44 @@ void setUI() {
      ;
   
   // Move point
-  movingBox = cp5.addCheckBox("changeMoving")
+  movingBox = cp5.addToggle("changeMoving")
                 .setPosition(10, 110)
                 .setSize(15, 15)
-                .addItem("Move the main point", 0)
+                .setLabel("");
                 ;
-  if(moving){movingBox.activate(0);} else {movingBox.deactivate(0);}
-  
+  if(moving){movingBox.setState(true);} else {movingBox.setState(false);}
+  cp5.addTextlabel("labelMovePoint")
+      .setText("Move point")
+      .setPosition(30, 113)
+      ;
+      
   // Move point
-  drawBox = cp5.addCheckBox("changeDraw")
+  drawBox = cp5.addToggle("changeDraw")
                 .setPosition(10, 135)
                 .setSize(15, 15)
-                .addItem("Draw", 0)
+                .setLabel("");
                 ;
-  if(draw){drawBox.activate(0);} else {drawBox.deactivate(0);}
+  if(draw){drawBox.setState(true);} else {drawBox.setState(false);}
+  cp5.addTextlabel("labelDraw")
+      .setText("Draw")
+      .setPosition(30, 138)
+      ;
 }
 
 void changeInputAddress(String s){
+
+  inputIsValid = false; // consider false until proven OK
+  
   String[] ints = split(s, ':');
-  String ip = ints[0];
-  String port = ints[1];
+  String ip, port;
+  try{
+    ip = ints[0];
+    port = ints[1];
+    Integer.parseInt(port);
+  } catch(Exception e){
+    return; 
+  }
   if (Integer.parseInt(port) != oscPort || ip != addressString) {
-    println("input :"+ip+":"+port);
     if (Integer.parseInt(port) > 1024 && Integer.parseInt(port) < 65535){
       addressString = ip;
       oscPort = Integer.parseInt(port);
@@ -433,59 +466,67 @@ void changeInputAddress(String s){
       augmenta=null;
       augmenta= new AugmentaP5(this, 50000);
       sendingAddress = new NetAddress(addressString, oscPort);
+      if (sendingAddress.isvalid()){
+        inputIsValid = true; 
+      }
     }
   }
+  
 }
 
 void forceBroadcast(int v){
   println("force broadcast");
-  String[] ints = split(portInput.getText(), ':');
-  
-  String ip = ints[0];
-  String port = ints[1];
   int intPort;
+  String[] ints = split(portInput.getText(), ':');
+  String ip, port;
   try{
-   intPort = Integer.parseInt(port);
-  } catch (NumberFormatException e) {
-   intPort = 12000; 
+    ip = ints[0];
+    port = ints[1];
+    intPort = Integer.parseInt(port);
+  } catch(Exception e){
+    ip = "";
+    intPort = 12000;
   }
   if (intPort != oscPort || ip != addressString) {
-    println("input :"+ip+":"+port);
-    if (intPort > 1024 && intPort < 65535){
-      addressString="255.255.255.255";
-      oscPort = intPort;
-      augmenta.unbind();
-      augmenta=null;
-      augmenta= new AugmentaP5(this, 50000);
-      sendingAddress = new NetAddress(addressString, oscPort);
-      portInput.setText(addressString+":"+oscPort);
+    if (intPort < 1024 || intPort > 65535){
+      intPort=12000;
     }
+    addressString="255.255.255.255";
+    oscPort = intPort;
+    augmenta.unbind();
+    augmenta=null;
+    augmenta= new AugmentaP5(this, 50000);
+    sendingAddress = new NetAddress(addressString, oscPort);
+    portInput.setText(addressString+":"+oscPort);
+    inputIsValid = true;
   }
 }
 
 void forceLocal(int v){
   println("force local");
-  String[] ints = split(portInput.getText(), ':');
-  
-  String ip = ints[0];
-  String port = ints[1];
   int intPort;
+  String[] ints = split(portInput.getText(), ':');
+  String ip, port;
   try{
-   intPort = Integer.parseInt(port);
-  } catch (NumberFormatException e) {
-   intPort = 12000; 
+    ip = ints[0];
+    port = ints[1];
+    intPort = Integer.parseInt(port);
+  } catch(Exception e){
+    ip = "";
+    intPort = 12000;
   }
   if (intPort != oscPort || ip != addressString) {
-    println("input :"+ip+":"+port);
-    if (intPort > 1024 && intPort < 65535){
-      addressString="127.0.0.1";
-      oscPort = intPort;
-      augmenta.unbind();
-      augmenta=null;
-      augmenta= new AugmentaP5(this, 50000);
-      sendingAddress = new NetAddress(addressString, oscPort);
-      portInput.setText(addressString+":"+oscPort);
+    if (intPort < 1024 || intPort > 65535){
+      intPort=12000;
     }
+    addressString="127.0.0.1";
+    oscPort = intPort;
+    augmenta.unbind();
+    augmenta=null;
+    augmenta= new AugmentaP5(this, 50000);
+    sendingAddress = new NetAddress(addressString, oscPort);
+    portInput.setText(addressString+":"+oscPort);
+    inputIsValid = true;
   }
 }
 
@@ -496,72 +537,103 @@ void changeSceneHeight(String s){
   adjustSceneSize(); 
 }
 
-void changeSendData(float[] a) {
-  if(a[0] == 1){
-     send = true;
-  } else {
-    send = false;
-  }
+void changeSendData(boolean b) {
+  send = b;
 }
 
-void changeGrid(float[] a) {
-  if(a[0] == 1){
-    grid = true;
-  } else {
-    grid = false;
-  }
+void changeGrid(boolean b) {
+  grid = b;
 }
 
 void changeGridCount(String s){
-  gridCount = (Integer.parseInt(s));
+  try{
+    gridCount = (Integer.parseInt(s));
+    if(gridCount > 5000){
+     gridCount = 5000;
+     gridCountBox.setText(""+gridCount);
+    }
+  } catch(Exception e) {
+    return;
+  }
   updateGrid();
+  
 }
   
-  
-void changeMoving(float[] a) {
-  if(a[0] == 1){
-    moving = true;
-  } else {
-    moving = false;
-  }
+void changeMoving(boolean b) {
+  moving = b;
 }
-void changeDraw(float[] a) {
-  if(a[0] == 1){
-    draw = true;
-  } else {
-    draw = false;
-  }
+void changeDraw(boolean b) {
+  draw = b;
 }
 void adjustSceneSize() {
-
-  int sw = Integer.parseInt(sceneX.getText());
-  int sh = Integer.parseInt(sceneY.getText());
-    
-  if ( (width!=sw || height!=sh) && sw>100 && sh>100 && sw<=16000 && sh <=16000 ) {
-    surface.setSize(sw+frame.getInsets().left+frame.getInsets().right, sh+frame.getInsets().top+frame.getInsets().bottom);
+  int sw, sh;
+  try{
+    sw = Integer.parseInt(sceneX.getText());
+    sh = Integer.parseInt(sceneY.getText());
+  } catch(Exception e){
+    return;
+  }
+  if ( (canvas.width!=sw || canvas.height!=sh) && sw>=300 && sh>=300 && sw<=16000 && sh <=16000 ) {
+    // Create the output canvas with the correct size
+    canvas = createGraphics(sw, sh);
+    float ratio = (float)sw/(float)sh;
+    if (sw >= displayWidth*0.9f || sh >= displayHeight*0.9f) {
+      // Resize the window to fit in the screen with the correct ratio
+      if ( ratio > displayWidth/displayHeight ) {
+        sw = (int)(displayWidth*0.8f);
+        sh = (int)(sw/ratio);
+      } else {
+        sh = (int)(displayHeight*0.8f);
+        sw = (int)(sh*ratio);
+      }
+    }
+    surface.setSize(sw, sh);
+    // Update the grid to make sure everything's draw correctly
+    updateGrid();
+  } else if (sw <300 || sh <300 || sw > 16000 || sh > 16000) {
+     println("ERROR : cannot set a window size smaller than 300 or greater than 16000"); 
   }
 }
 
-void saveSettings(String file){
-  /*
-  println("Saving to : "+file);
-  cp5.saveProperties(file);
-  */
-}
+// --------------------------------------
+// Save / Load
+// --------------------------------------
 void saveSettings(){
   saveSettings(defaultSettingsFile);
 }
-
-void loadSettings(String file){
-  /*
-  println("Loading from : "+file);
-  cp5.loadProperties(file);
-  */
+void saveSettings(String file){
+  println("Saving to : "+file);
+  cp5.saveProperties(file);
 }
+
 void loadSettings(){
   loadSettings(defaultSettingsFile);
 }
-
-void stop(){
- saveSettings("settings"); 
+void loadSettings(String file){
+  println("Loading from : "+file);
+  cp5.loadProperties(file);
+  
+  // After load force the textfields callbacks
+  List<Textfield> list = cp5.getAll(Textfield.class);
+  for(Textfield b:list) {
+    b.submit();
+  }
+  
 }
+// --------------------------------------
+
+
+// --------------------------------------
+// Exit function (This way of handling the exit of the app works everywhere except in the editor)
+// --------------------------------------
+void exit(){
+  // Save the settings on exit
+  saveSettings();
+  
+  // Add custom code here
+  // ...
+  
+  // Finish by forwarding the exit call
+  super.exit();
+}
+// --------------------------------------

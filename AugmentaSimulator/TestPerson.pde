@@ -6,6 +6,7 @@ class TestPerson {
   float xDirection;
   float yDirection;
   float speed = 0.002; 
+  PGraphics canvas;
   
   // Contructor
   TestPerson(float x, float y) {    
@@ -21,6 +22,10 @@ class TestPerson {
     yDirection = speed * sin(angle);
     xDirection = speed * cos(angle);
     
+  }
+  
+  void setGraphicsTarget(PGraphics p){
+    canvas = p;
   }
   
   // Custom method for updating the variables
@@ -44,8 +49,8 @@ class TestPerson {
       y = y + (2 * yDirection);
     }
     // Compute the velocity
-    p.velocity.x = (x - oldX)/width;
-    p.velocity.y = (y - oldY)/height;
+    p.velocity.x = (x - oldX)/canvas.width;
+    p.velocity.y = (y - oldY)/canvas.height;
     // Update augmenta
     p.depth = 0.5f;
     p.centroid.x = x;
@@ -67,6 +72,6 @@ class TestPerson {
     
   // Custom method for drawing the object
   void draw() {
-    ellipse(p.centroid.x*(float)width, p.centroid.y*(float)height, 10, 10);
+    canvas.ellipse(p.centroid.x*(float)canvas.width, p.centroid.y*(float)canvas.height, 10, 10);
   }
 }
