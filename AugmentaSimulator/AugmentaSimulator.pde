@@ -14,7 +14,6 @@
 import netP5.*; // needed for augmenta
 import TUIO.*; // Needed for augmenta
 import augmentaP5.*; // Augmenta
-import codeanticode.syphon.*; // Syphon
 import java.util.List; // Needed for the GUI implementation
 import java.awt.geom.Point2D; // 2D points to send AugmentaPersons
 import controlP5.*; // GUI
@@ -29,6 +28,8 @@ String addressString = "127.0.0.1";
 NetAddress sendingAddress;
 boolean inputIsValid = true;
 AugmentaPerson testPerson;
+// Width and height to send
+int augmentaWidth, augmentaHeight;
 
 // ControlP5
 ControlP5 cp5;
@@ -66,9 +67,6 @@ Boolean gridHasChanged = false;
 int gridCount = 10;
 TestPerson[] persons;
 
-// Graphics that will hold the texture to draw
-PGraphics canvas;
-
 void settings(){
   // Set the initial frame size
   size(640, 480, P2D);
@@ -76,9 +74,6 @@ void settings(){
 }
 
 void setup() {
-  
-  // Create the canvas that will be used to send the syphon output
-  canvas = createGraphics(width, height, P2D);
  
   // New GUI instance
   cp5 = new ControlP5(this);
@@ -100,8 +95,8 @@ void setup() {
   testPerson.highest.z = random(0.4, 0.6);
 
   // Init
-  y=canvas.height/2;
-  x=canvas.width/2;
+  y=height/2;
+  x=width/2;
   
   loadSettings();
 }
@@ -109,9 +104,6 @@ void setup() {
 void draw() {
 
   background(0);
-  // Begin drawing the canvas
-  canvas.beginDraw();
-  canvas.background(0);
 
   if (grid) {
     // Update and draw the TestPersons
@@ -119,9 +111,9 @@ void draw() {
       persons[i].update();
       //persons[i].send(augmenta, sendingAddress);
       if (send) {
-        canvas.fill(255);
+        fill(255);
       } else {
-        canvas.fill(128);
+        fill(128);
       }
       if(draw){
         persons[i].draw();
@@ -136,20 +128,20 @@ void draw() {
     oldY = y;
     // Sin animation
     if (moving) {
-      x = map(sin(t), -1, 1, canvas.width/10, canvas.width*9/10);
+      x = map(sin(t), -1, 1, width/10, width*9/10);
     }
   }
   // Draw disk
   if (send) {
-    canvas.fill(255);
+    fill(255);
   } else {
-    canvas.fill(128);
+    fill(128);
   }
   if (draw){
-    canvas.ellipse(x, y, 20, 20);
+    ellipse(x, y, 20, 20);
     //rect(
-    canvas.textSize(16);
-    canvas.text(""+pid, x+20, y-10, 50, 20);
+    textSize(16);
+    text(""+pid, x+20, y-10, 50, 20);
   }
   
 
@@ -159,12 +151,12 @@ void draw() {
   age++;
 
   // Update point
-  testPerson.centroid.x = (float)x/canvas.width;
-  testPerson.centroid.y = (float)y/canvas.height;
-  testPerson.velocity.x = (x - oldX)/canvas.width;
-  testPerson.velocity.y = (y - oldY)/canvas.height;
-  testPerson.boundingRect.x = (float)x/canvas.width-0.1;
-  testPerson.boundingRect.y = (float)y/canvas.height-0.1;
+  testPerson.centroid.x = (float)x/width;
+  testPerson.centroid.y = (float)y/height;
+  testPerson.velocity.x = (x - oldX)/width;
+  testPerson.velocity.y = (y - oldY)/height;
+  testPerson.boundingRect.x = (float)x/width-0.1;
+  testPerson.boundingRect.y = (float)y/height-0.1;
   testPerson.highest.x = testPerson.centroid.x;
   testPerson.highest.y = testPerson.centroid.y;
   // Other values 
@@ -188,7 +180,7 @@ void draw() {
   // Compute the number of persons in the scene
   int personsInScene = 1; // The "mouse" person
   if (grid) personsInScene +=  persons.length; // + the grid if activated
-  augmenta.sendScene(canvas.width, canvas.height, 100, sceneAge, percentCovered, personsInScene, averageMotion, sendingAddress);
+  augmenta.sendScene(augmentaWidth, augmentaHeight, 100, sceneAge, percentCovered, personsInScene, averageMotion, sendingAddress);
 
   // Draw input error if needed
   if(inputIsValid){
@@ -196,35 +188,28 @@ void draw() {
   } else {
     inputError.setVisible(true); 
   }
-  
-  canvas.endDraw();
-  
-  // Draw the augmenta canvas in the window
-  if(draw){
-    image(canvas, 0, 0, width, height);
-  }
 }
 
 void mouseDragged() {
   oldX = x;
   oldY = y;
   // Update coords
-  x = (float)mouseX/(float)width*(float)canvas.width;
-  y = (float)mouseY/(float)height*(float)canvas.height;
+  x = mouseX;
+  y = mouseY;
 
   // The following code is here just for pure fun and aesthetic !
   // It enables the point to go on in its sinus road where
   // you left it !
 
   // Clamping
-  if (x>canvas.width*9/10){
-    x=canvas.width*9/10;
+  if (x>width*9/10){
+    x=width*9/10;
   }
-  if (x<canvas.width/10){
-    x=canvas.width/10;
+  if (x<width/10){
+    x=width/10;
   }
   // Reverse
-  t = asin(map(x, canvas.width/10, canvas.width*9/10, -1, 1));
+  t = asin(map(x, width/10,width*9/10, -1, 1));
 }
 
 void keyPressed() {
@@ -300,7 +285,6 @@ public void updateGrid(){
   // Create grid
   for (int i = 0; i < gridCount ; i++) {
       persons[i] = new TestPerson(random(0.1, 0.9), random(0.1, 0.9));
-      persons[i].setGraphicsTarget(canvas);
       persons[i].p.oid = i; // set oid
   } 
 }
@@ -573,9 +557,10 @@ void adjustSceneSize() {
   } catch(Exception e){
     return;
   }
-  if ( (canvas.width!=sw || canvas.height!=sh) && sw>=300 && sh>=300 && sw<=16000 && sh <=16000 ) {
+  if ( (augmentaWidth!=sw || augmentaHeight!=sh) && sw>=300 && sh>=300 && sw<=16000 && sh <=16000 ) {
     // Create the output canvas with the correct size
-    canvas = createGraphics(sw, sh);
+    augmentaWidth = sw;
+    augmentaHeight = sh;
     float ratio = (float)sw/(float)sh;
     if (sw >= displayWidth*0.9f || sh >= displayHeight*0.9f) {
       // Resize the window to fit in the screen with the correct ratio
