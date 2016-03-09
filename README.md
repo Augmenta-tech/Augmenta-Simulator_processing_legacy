@@ -3,6 +3,9 @@ Augmenta Simulator
 
 Work without Augmenta hardware by simulating people moving in space
 
+
+
+
 ![simulator](https://github.com/Theoriz/Augmenta/blob/gh-pages/res/gif/simulator.gif)
 
 Use
