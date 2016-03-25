@@ -320,9 +320,7 @@ boolean mouseIsInFrame() {
 }
 
 void showGUI(boolean val) {
-  // Show or hide the GUI after the Syphon output
   portInput.setVisible(val);
-
   sceneX.setVisible(val);
   sceneY.setVisible(val);
 }
@@ -331,7 +329,7 @@ void setUI() {
   
   // IP / Port input OSC
   cp5.addTextlabel("labeloscport")
-      .setText("OSC out ip:port")
+      .setText("OSC out   ip:port")
       .setPosition(10, 16)
       ;
   portInput = cp5.addTextfield("changeInputAddress")
@@ -342,12 +340,12 @@ void setUI() {
      ;
   portInput.setText(addressString+":"+oscPort);
   cp5.addButton("forceBroadcast")
-     .setPosition(210,10)
+     .setPosition(211,10)
      .setSize(55,20)
      .setCaptionLabel("Broadcast")
      ;
   cp5.addButton("forceLocal")
-     .setPosition(270,10)
+     .setPosition(271,10)
      .setSize(40,20)
      .setCaptionLabel("Local")
      ;    
@@ -380,29 +378,29 @@ void setUI() {
       
   // Data send
   sendDataBox = cp5.addToggle("changeSendData")
-                .setPosition(10, 60)
+                .setPosition(14, 110)
                 .setSize(15, 15)
                 .setLabel("");
                 ;
   sendDataBox.setState(send);
   cp5.addTextlabel("labelSendData")
-      .setText("Send Data")
-      .setPosition(30, 63)
+      .setText("Send data")
+      .setPosition(34, 113)
       ;
   
   // Generate
   generateBox = cp5.addToggle("changeGenerate")
-                .setPosition(10, 85)
+                .setPosition(14, 85)
                 .setSize(15, 15)
                 .setLabel("");
                 ;
   generateBox.setState(generate);
   cp5.addTextlabel("labelGenerate")
-      .setText("Activate generate with                    people")
-      .setPosition(30, 88)
+      .setText("Generate                     persons")
+      .setPosition(34, 88)
       ;
   generateCountBox = cp5.addTextfield("changeGenerateCount")
-     .setPosition(115,84)
+     .setPosition(85,84)
      .setSize(25,17)
      .setAutoClear(false)
      .setCaptionLabel("")
@@ -412,26 +410,26 @@ void setUI() {
   
   // Move point
   movingBox = cp5.addToggle("changeMoving")
-                .setPosition(10, 110)
+                .setPosition(14, 60)
                 .setSize(15, 15)
                 .setLabel("");
                 ;
   if(moving){movingBox.setState(true);} else {movingBox.setState(false);}
   cp5.addTextlabel("labelMovePoint")
       .setText("Move point")
-      .setPosition(30, 113)
+      .setPosition(34, 63)
       ;
       
   // Move point
   drawBox = cp5.addToggle("changeDraw")
-                .setPosition(10, 135)
+                .setPosition(14, 135)
                 .setSize(15, 15)
                 .setLabel("");
                 ;
   drawBox.setState(draw);
   cp5.addTextlabel("labelDraw")
       .setText("Draw")
-      .setPosition(30, 138)
+      .setPosition(34, 138)
       ;
 }
 
@@ -610,10 +608,8 @@ void loadSettings(String file){
   for(Textfield b:list) {
     b.submit();
   }
-  
 }
 // --------------------------------------
-
 
 // --------------------------------------
 // Exit function (This way of handling the exit of the app works everywhere except in the editor)
