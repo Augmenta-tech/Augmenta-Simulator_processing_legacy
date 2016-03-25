@@ -129,6 +129,9 @@ void draw() {
     // Sin animation
     if (moving) {
       x = map(sin(t), -1, 1, width/10, width*9/10);
+       // Increment val
+      t = t + direction*TWO_PI/70; // 70 inc
+      t = t % TWO_PI;
     }
   }
   // Draw disk
@@ -143,10 +146,7 @@ void draw() {
     textSize(16);
     text(""+pid, x+20, y-10, 50, 20);
   }
-  
-  // Increment val
-  t= t + direction*TWO_PI/70; // 70 inc
-  t = t % TWO_PI;
+
   age++;
 
   // Update point
