@@ -46,7 +46,7 @@ Toggle drawBox;
 // Save/Load
 String defaultSettingsFile = "settings";
 // Key modifiers
-boolean cmdKey = true;
+boolean cmdKey = false;
 
 float x, oldX = 0;
 float y, oldY = 0;
