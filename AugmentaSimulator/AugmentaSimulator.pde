@@ -40,8 +40,8 @@ Textfield portInput;
 Textlabel inputError;
 Toggle sendDataBox;
 Toggle movingBox;
-Toggle gridBox;
-Textfield gridCountBox;
+Toggle generateBox;
+Textfield generateCountBox;
 Toggle drawBox;
 // Save/Load
 String defaultSettingsFile = "settings";
@@ -59,12 +59,12 @@ int oscPort = 12000;
 
 Boolean send = true;
 Boolean moving = false;
-Boolean grid = false;
+Boolean generate = false;
 Boolean draw = true;
-Boolean gridHasChanged = false;
+Boolean generateHasChanged = false;
 
 // Array of TestPerson points
-int gridCount = 10;
+int generateCount = 10;
 TestPerson[] persons;
 
 void settings(){
@@ -84,7 +84,7 @@ void setup() {
   smooth();
   frameRate(30);
   
-  updateGrid();
+  updateGeneration();
  
   // Osc network com
   augmenta = new AugmentaP5(this, 50000);
@@ -105,7 +105,7 @@ void draw() {
 
   background(0);
 
-  if (grid) {
+  if (generate) {
     // Update and draw the TestPersons
     for (int i = 0; i < persons.length; i++) {
       persons[i].update();
@@ -144,7 +144,6 @@ void draw() {
     text(""+pid, x+20, y-10, 50, 20);
   }
   
-
   // Increment val
   t= t + direction*TWO_PI/70; // 70 inc
   t = t % TWO_PI;
@@ -166,7 +165,7 @@ void draw() {
   // Send point
   if (send) {
     augmenta.sendSimulation(testPerson, sendingAddress);
-    if (grid) {
+    if (generate) {
       for (int i = 0; i < persons.length; i++) {
         persons[i].send(augmenta, sendingAddress);
       }
@@ -179,7 +178,7 @@ void draw() {
   Point2D.Float averageMotion = new Point2D.Float(2f+random(0.1), -2f+random(0.1));
   // Compute the number of persons in the scene
   int personsInScene = 1; // The "mouse" person
-  if (grid) personsInScene +=  persons.length; // + the grid if activated
+  if (generate) personsInScene +=  persons.length; // + the generation if activated
   augmenta.sendScene(augmentaWidth, augmentaHeight, 100, sceneAge, percentCovered, personsInScene, averageMotion, sendingAddress);
 
   // Draw input error if needed
@@ -230,16 +229,16 @@ void keyPressed() {
         pid = int(random(1000));
         age = 0;
         augmenta.sendSimulation(testPerson, sendingAddress, "personEntered");
-        // Send personEntered for the grid
-        if(grid){
+        // Send personEntered for the people generation
+        if(generate){
           for (int i = 0; i < persons.length; i++) {
             persons[i].send(augmenta, sendingAddress, "personEntered");
           }
         }
       } else {
         augmenta.sendSimulation(testPerson, sendingAddress, "personWillLeave");
-        // Send personWillLeave for the old grid
-        if(grid){
+        // Send personWillLeave for the old generated people
+        if(generate){
           for (int i = 0; i < persons.length; i++) {
             persons[i].send(augmenta, sendingAddress, "personWillLeave");
           }
@@ -254,15 +253,15 @@ void keyPressed() {
   } else if(cmdKey && key == 'l'){
     loadSettings();
   }else if (key == 'g' || key == 'G') {
-    grid=!grid;
-    gridBox.setState(grid);
-    if (send && !grid) {
-      // Send personWillLeave for the old grid
+    generate=!generate;
+    generateBox.setState(generate);
+    if (send && !generate) {
+      // Send personWillLeave for the old people generated
       for (int i = 0; i < persons.length; i++) {
         persons[i].send(augmenta, sendingAddress, "personWillLeave");
       }
-    } else if (send && grid) {
-      // Send personEntered for the old grid
+    } else if (send && generate) {
+      // Send personEntered for the old people generated
       for (int i = 0; i < persons.length; i++) {
         persons[i].send(augmenta, sendingAddress, "personEntered");
       }
@@ -279,18 +278,18 @@ void keyReleased(){
   }
 }
 
-public void updateGrid(){
+public void updateGeneration(){
   
-  // Send personWillLeave for the old grid
+  // Send personWillLeave for the old generated people
   if (persons != null){
     for (int i = 0; i < persons.length; i++) {
       persons[i].send(augmenta, sendingAddress, "personWillLeave");
     }
   }
-  persons = new TestPerson[gridCount];
+  persons = new TestPerson[generateCount];
 
-  // Create grid
-  for (int i = 0; i < gridCount ; i++) {
+  // generate people
+  for (int i = 0; i < generateCount ; i++) {
       persons[i] = new TestPerson(random(0.1, 0.9), random(0.1, 0.9));
       persons[i].p.oid = i; // set oid
   } 
@@ -391,24 +390,24 @@ void setUI() {
       .setPosition(30, 63)
       ;
   
-  // Grid
-  gridBox = cp5.addToggle("changeGrid")
+  // Generate
+  generateBox = cp5.addToggle("changeGenerate")
                 .setPosition(10, 85)
                 .setSize(15, 15)
                 .setLabel("");
                 ;
-  gridBox.setState(grid);
-  cp5.addTextlabel("labelGrid")
-      .setText("Activate grid with                    people")
+  generateBox.setState(generate);
+  cp5.addTextlabel("labelGenerate")
+      .setText("Activate generate with                    people")
       .setPosition(30, 88)
       ;
-  gridCountBox = cp5.addTextfield("changeGridCount")
+  generateCountBox = cp5.addTextfield("changeGenerateCount")
      .setPosition(115,84)
      .setSize(25,17)
      .setAutoClear(false)
      .setCaptionLabel("")
      .setInputFilter(ControlP5.INTEGER)
-     .setText(""+gridCount)
+     .setText(""+generateCount)
      ;
   
   // Move point
@@ -533,21 +532,21 @@ void changeSendData(boolean b) {
   send = b;
 }
 
-void changeGrid(boolean b) {
-  grid = b;
+void changeGenerate(boolean b) {
+  generate = b;
 }
 
-void changeGridCount(String s){
+void changeGenerateCount(String s){
   try{
-    gridCount = (Integer.parseInt(s));
-    if(gridCount > 5000){
-     gridCount = 5000;
-     gridCountBox.setText(""+gridCount);
+    generateCount = (Integer.parseInt(s));
+    if(generateCount > 5000){
+     generateCount = 5000;
+     generateCountBox.setText(""+generateCount);
     }
   } catch(Exception e) {
     return;
   }
-  updateGrid();
+  updateGeneration();
   
 }
   
@@ -581,8 +580,8 @@ void adjustSceneSize() {
       }
     }
     surface.setSize(sw, sh);
-    // Update the grid to make sure everything's draw correctly
-    updateGrid();
+    // Update the people generation to make sure everything's draw correctly
+    updateGeneration();
   } else if (sw <300 || sh <300 || sw > 16000 || sh > 16000) {
      println("ERROR : cannot set a window size smaller than 300 or greater than 16000"); 
   }
