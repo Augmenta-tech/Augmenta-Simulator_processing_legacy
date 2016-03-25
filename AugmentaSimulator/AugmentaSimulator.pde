@@ -332,7 +332,7 @@ void setUI() {
   
   // IP / Port input OSC
   cp5.addTextlabel("labeloscport")
-      .setText("OSC input ip:port")
+      .setText("OSC out ip:port")
       .setPosition(10, 16)
       ;
   portInput = cp5.addTextfield("changeInputAddress")
@@ -354,7 +354,7 @@ void setUI() {
      ;    
   inputError = cp5.addTextlabel("labelInputError")
                   .setPosition(320, 16)
-                  .setText("Error : input not valid")
+                  .setText("Error : address not valid")
                   ;
      
   // CHANGE SCENE SIZE
@@ -524,6 +524,7 @@ void forceLocal(int v){
 void changeSceneWidth(String s){
   adjustSceneSize();
 }
+
 void changeSceneHeight(String s){
   adjustSceneSize(); 
 }
