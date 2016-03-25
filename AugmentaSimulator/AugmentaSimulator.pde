@@ -219,12 +219,16 @@ void keyPressed() {
   // Stop/Start the movement of the point
   else if (key == 'm' || key == 'M') {
     moving=!moving;
+    movingBox.setState(moving);
   } else if (key == 's' || key == 'S') {
     if (cmdKey){
       saveSettings();
     } else {
       send=!send;
+      sendDataBox.setState(send);
       if (send) {
+        pid = int(random(1000));
+        age = 0;
         augmenta.sendSimulation(testPerson, sendingAddress, "personEntered");
         // Send personEntered for the grid
         if(grid){
@@ -241,28 +245,31 @@ void keyPressed() {
           }
         }
       }
-      pid = int(random(1000));
-      age = 0;
     }
   } else if (keyCode == TAB){
     if (sceneX.isFocus()){
        sceneX.setFocus(false);
        sceneY.setFocus(true);
     }
-  } else if(key == 's'){
-   saveSettings(defaultSettingsFile); 
-  } else if(key == 'l'){
-    loadSettings(defaultSettingsFile);
+  } else if(cmdKey && key == 'l'){
+    loadSettings();
   }else if (key == 'g' || key == 'G') {
     grid=!grid;
-    if (!grid && send) {
+    gridBox.setState(grid);
+    if (send && !grid) {
       // Send personWillLeave for the old grid
       for (int i = 0; i < persons.length; i++) {
         persons[i].send(augmenta, sendingAddress, "personWillLeave");
       }
+    } else if (send && grid) {
+      // Send personEntered for the old grid
+      for (int i = 0; i < persons.length; i++) {
+        persons[i].send(augmenta, sendingAddress, "personEntered");
+      }
     }
   } else if (key == 'd' || key == 'D') {
     draw=!draw;
+    drawBox.setState(draw);
   }
 }
 
@@ -378,7 +385,7 @@ void setUI() {
                 .setSize(15, 15)
                 .setLabel("");
                 ;
-  if(send){sendDataBox.setState(true);} else {sendDataBox.setState(false);}
+  sendDataBox.setState(send);
   cp5.addTextlabel("labelSendData")
       .setText("Send Data")
       .setPosition(30, 63)
@@ -390,7 +397,7 @@ void setUI() {
                 .setSize(15, 15)
                 .setLabel("");
                 ;
-  if(grid){gridBox.setState(true);} else {gridBox.setState(false);}
+  gridBox.setState(grid);
   cp5.addTextlabel("labelGrid")
       .setText("Activate grid with                    people")
       .setPosition(30, 88)
@@ -422,7 +429,7 @@ void setUI() {
                 .setSize(15, 15)
                 .setLabel("");
                 ;
-  if(draw){drawBox.setState(true);} else {drawBox.setState(false);}
+  drawBox.setState(draw);
   cp5.addTextlabel("labelDraw")
       .setText("Draw")
       .setPosition(30, 138)
