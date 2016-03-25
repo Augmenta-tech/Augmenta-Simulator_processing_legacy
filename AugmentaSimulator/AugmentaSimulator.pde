@@ -141,10 +141,10 @@ void draw() {
     fill(128);
   }
   if (draw){
-    ellipse(x, y, 20, 20);
+    ellipse(x, y, 19, 19);
     //rect(
-    textSize(16);
-    text(""+pid, x+20, y-10, 50, 20);
+    textSize(14);
+    text(""+pid, x+20, y-9, 50, 20);
   }
 
   age++;
