@@ -6,6 +6,7 @@ class TestPerson {
   float xDirection;
   float yDirection;
   float speed = 0.002;
+  float drawingRadius = 10;
   
   // Contructor
   TestPerson(float x, float y) {    
@@ -29,17 +30,17 @@ class TestPerson {
     x = p.centroid.x;
     y = p.centroid.y;
     // Store the oldX oldY values
-   oldX = x;
-   oldY = y;
+    oldX = x;
+    oldY = y;
     
     // Compute the new values
     x = x + xDirection;
     y = y + yDirection;
-    if (x >= 1 || x <= 0) {
+    if (x >= (1-drawingRadius/width) || x <= drawingRadius/width) {
       xDirection *= -1;
       x = x + (2 * xDirection);
     }
-    if (y >= 1 || y <= 0) {
+    if (y >= (1-drawingRadius/height) || y <= drawingRadius/height) {
       yDirection *= -1;
       y = y + (2 * yDirection);
     }
@@ -55,7 +56,6 @@ class TestPerson {
     p.highest.x = p.centroid.x;
     p.highest.y = p.centroid.y;
     p.age++; 
-    
   }
   
   void send(AugmentaP5 augmenta, NetAddress a){
@@ -67,6 +67,6 @@ class TestPerson {
     
   // Custom method for drawing the object
   void draw() {
-    ellipse(p.centroid.x*(float)width, p.centroid.y*(float)height, 10, 10);
+    ellipse(p.centroid.x*(float)width, p.centroid.y*(float)height, drawingRadius*2, drawingRadius*2);
   }
 }
