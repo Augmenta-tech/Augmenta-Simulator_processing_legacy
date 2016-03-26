@@ -78,6 +78,7 @@ void setup() {
   // New GUI instance
   cp5 = new ControlP5(this);
   cp5.setUpdate(true);
+  
   // Set the UI
   setUI();
   
@@ -150,10 +151,10 @@ void draw() {
   age++;
 
   // Update point
-  testPerson.centroid.x = (float)mouseX/width;
-  testPerson.centroid.y = (float)mouseY/height;
-  testPerson.velocity.x = (mouseX - oldX)/width;
-  testPerson.velocity.y = (mouseY - oldY)/height;
+  testPerson.centroid.x = (float)x/width;
+  testPerson.centroid.y = (float)y/height;
+  testPerson.velocity.x = (x - oldX)/width;
+  testPerson.velocity.y = (y - oldY)/height;
   testPerson.boundingRect.x = (float)mouseX/width-0.1;
   testPerson.boundingRect.y = (float)mouseY/height-0.1;
   testPerson.highest.x = testPerson.centroid.x;
