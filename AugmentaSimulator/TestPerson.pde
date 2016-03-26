@@ -45,8 +45,8 @@ class TestPerson {
       y = y + (2 * yDirection);
     }
     // Compute the velocity
-    p.velocity.x = (x - oldX)/width;
-    p.velocity.y = (y - oldY)/height;
+    p.velocity.x = (x - oldX);
+    p.velocity.y = (y - oldY);
     // Update augmenta
     p.depth = 0.5f;
     p.centroid.x = x;
