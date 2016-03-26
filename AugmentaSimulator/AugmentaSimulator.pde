@@ -81,7 +81,6 @@ void setup() {
   background(0);
   x=width/2;
   y=height/2;
-  smooth();
   frameRate(30);
   
   // Allow window to be resized
