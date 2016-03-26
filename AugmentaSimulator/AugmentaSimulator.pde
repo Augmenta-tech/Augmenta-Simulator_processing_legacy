@@ -155,8 +155,8 @@ void draw() {
   testPerson.centroid.y = (float)y/height;
   testPerson.velocity.x = (x - oldX)/width;
   testPerson.velocity.y = (y - oldY)/height;
-  testPerson.boundingRect.x = (float)mouseX/width-0.1;
-  testPerson.boundingRect.y = (float)mouseY/height-0.1;
+  testPerson.boundingRect.x = (float)x/width-0.1;
+  testPerson.boundingRect.y = (float)y/height-0.1;
   testPerson.highest.x = testPerson.centroid.x;
   testPerson.highest.y = testPerson.centroid.y;
   // Other values 
