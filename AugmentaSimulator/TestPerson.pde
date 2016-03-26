@@ -16,6 +16,8 @@ class TestPerson {
     RectangleF rect = new RectangleF(x-size/2, y-size/2, size, size);
     PVector pos = new PVector(x,y);
     p = new AugmentaPerson(pid, pos, rect);
+    p.highest.x = x + random(-0.02, 0.02);
+    p.highest.y = y + random(-0.02, 0.02);
     p.highest.z = random(0.4, 0.6);
     // Compute direction
     float angle = random(0,6.28); // radians angle
@@ -53,9 +55,9 @@ class TestPerson {
     p.centroid.y = y;
     p.boundingRect.x = p.centroid.x - p.boundingRect.width/2;
     p.boundingRect.y = p.centroid.y - p.boundingRect.height/2;
-    p.highest.x = p.centroid.x;
-    p.highest.y = p.centroid.y;
-    p.age++; 
+    p.highest.x = p.highest.x + p.velocity.x;
+    p.highest.y = p.highest.y + p.velocity.y;
+    p.age++;
   }
   
   void send(AugmentaP5 augmenta, NetAddress a){
