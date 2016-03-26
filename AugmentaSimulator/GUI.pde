@@ -278,12 +278,17 @@ void saveSettings(String file){
 }
 
 void loadSettings(){
-  loadSettings(defaultSettingsFile);
+    loadSettings(defaultSettingsFile);
 }
 
 void loadSettings(String file){
   println("Loading from : "+file);
-  cp5.loadProperties(file);
+  try {
+    cp5.loadProperties(file);
+  } catch(Exception e){
+    e.printStackTrace();
+    return; 
+  } 
 }
   
 void applySettings(){  

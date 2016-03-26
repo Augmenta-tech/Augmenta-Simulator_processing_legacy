@@ -42,6 +42,7 @@ Toggle movingBox;
 Toggle generateBox;
 Textfield generateCountBox;
 Toggle drawBox;
+
 // Save/Load
 String defaultSettingsFile = "Simulator-settings";
 // Key modifiers
