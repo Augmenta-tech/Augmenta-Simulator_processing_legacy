@@ -260,8 +260,6 @@ void adjustSceneSize() {
       }
     }
     surface.setSize(sw, sh);
-    // Update the people generation to make sure everything's draw correctly
-    updateGeneration();
   } else if (sw <300 || sh <300 || sw > 16000 || sh > 16000) {
      println("ERROR : cannot set a window size smaller than 300 or greater than 16000"); 
   }
