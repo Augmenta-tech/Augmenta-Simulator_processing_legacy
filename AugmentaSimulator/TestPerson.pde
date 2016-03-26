@@ -9,7 +9,7 @@ class TestPerson {
   float drawingRadius = 10;
   
   // Contructor
-  TestPerson(float x, float y) {    
+  TestPerson(float x, float y) {
     // Setup the augmenta person
     int pid = int(random(10000000));
     float size = 0.1f;
@@ -21,7 +21,6 @@ class TestPerson {
     float angle = random(0,6.28); // radians angle
     yDirection = speed * sin(angle);
     xDirection = speed * cos(angle);
-    
   }
   
   // Custom method for updating the variables
@@ -36,11 +35,12 @@ class TestPerson {
     // Compute the new values
     x = x + xDirection;
     y = y + yDirection;
-    if (x >= (1-drawingRadius/width) || x <= drawingRadius/width) {
+    
+    if (x >= (1-p.boundingRect.width/2) || x <= p.boundingRect.width/2) {
       xDirection *= -1;
       x = x + (2 * xDirection);
     }
-    if (y >= (1-drawingRadius/height) || y <= drawingRadius/height) {
+    if (y >= (1-p.boundingRect.height/2) || y <= p.boundingRect.height/2) {
       yDirection *= -1;
       y = y + (2 * yDirection);
     }
