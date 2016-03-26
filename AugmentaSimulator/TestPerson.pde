@@ -11,7 +11,7 @@ class TestPerson {
   // Contructor
   TestPerson(float x, float y) {
     // Setup the augmenta person
-    int pid = int(random(10000000));
+    int pid = int(random(101,10000000)); // avoid collision with generated points
     float size = 0.1f;
     RectangleF rect = new RectangleF(x-size/2, y-size/2, size, size);
     PVector pos = new PVector(x,y);

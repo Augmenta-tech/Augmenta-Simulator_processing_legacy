@@ -53,7 +53,7 @@ float t = 0; // time
 int age = 0;
 int sceneAge = 0;
 int direction = 1;
-int pid = int(random(10000000));
+int pid = int(random(1,100)); // avoid collision with generated points
 int oscPort = 12000;
 // Fixed vector between centroid and highest point 
 PVector vecHighest = new PVector(random(-0.02, 0.02),random(-0.02, 0.02));
