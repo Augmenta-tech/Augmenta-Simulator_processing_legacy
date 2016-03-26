@@ -43,7 +43,7 @@ Toggle generateBox;
 Textfield generateCountBox;
 Toggle drawBox;
 // Save/Load
-String defaultSettingsFile = "settings";
+String defaultSettingsFile = "Simulator-settings";
 // Key modifiers
 boolean cmdKey = false;
 
