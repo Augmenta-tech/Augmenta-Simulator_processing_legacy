@@ -141,21 +141,21 @@ void draw() {
     fill(128);
   }
   if (draw){
-    ellipse(x, y, 19, 19);
+    ellipse(oldX, oldY, 19, 19);
     //rect(
     textSize(14);
-    text(""+pid, x+20, y-9, 50, 20);
+    text(""+pid, oldX+20, oldY-9, 50, 20);
   }
 
   age++;
 
   // Update point
-  testPerson.centroid.x = (float)x/width;
-  testPerson.centroid.y = (float)y/height;
-  testPerson.velocity.x = (x - oldX)/width;
-  testPerson.velocity.y = (y - oldY)/height;
-  testPerson.boundingRect.x = (float)x/width-0.1;
-  testPerson.boundingRect.y = (float)y/height-0.1;
+  testPerson.centroid.x = (float)mouseX/width;
+  testPerson.centroid.y = (float)mouseY/height;
+  testPerson.velocity.x = (mouseX - oldX)/width;
+  testPerson.velocity.y = (mouseY - oldY)/height;
+  testPerson.boundingRect.x = (float)mouseX/width-0.1;
+  testPerson.boundingRect.y = (float)mouseY/height-0.1;
   testPerson.highest.x = testPerson.centroid.x;
   testPerson.highest.y = testPerson.centroid.y;
   // Other values 
@@ -199,16 +199,18 @@ void mouseDragged() {
   // The following code is here just for pure fun and aesthetic !
   // It enables the point to go on in its sinus road where
   // you left it !
-
+  
+  float xSin = x;
+  
   // Clamping
   if (x>width*9/10){
-    x=width*9/10;
+    xSin=width*9/10;
   }
   if (x<width/10){
-    x=width/10;
+    xSin=width/10;
   }
   // Reverse
-  t = asin(map(x, width/10,width*9/10, -1, 1));
+  t = asin(map(xSin, width/10,width*9/10, -1, 1));
 }
 
 void keyPressed() {
@@ -327,7 +329,7 @@ void showGUI(boolean val) {
 
 void setUI() {
   
-  // IP / Port input OSC
+  // IP / Port output OSC
   cp5.addTextlabel("labeloscport")
       .setText("OSC out   ip:port")
       .setPosition(10, 16)
