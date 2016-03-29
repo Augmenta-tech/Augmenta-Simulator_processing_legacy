@@ -72,7 +72,7 @@ TestPerson[] persons;
 void settings(){
   // Set the initial frame size
   size(640, 480, P2D);
-  PJOGL.profile=1;
+  //PJOGL.profile=2;
 }
 
 void setup() {
@@ -93,9 +93,8 @@ void setup() {
   cp5.setUpdate(true);
   setUI();
   loadSettings();
-
-  updateGeneration();
- 
+  applySettings();
+   
   // OSC network com
   augmenta = new AugmentaP5(this, 50000);
   sendingAddress = new NetAddress(addressString, oscPort);
@@ -107,7 +106,7 @@ void setup() {
   movablePerson.highest.y = movablePerson.centroid.y + vecHighest.y;
   movablePerson.highest.z = random(0.4, 0.6);
   
-  applySettings();
+  updateGeneration();
 }
 
 void draw() {

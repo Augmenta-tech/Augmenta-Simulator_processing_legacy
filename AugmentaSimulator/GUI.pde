@@ -131,16 +131,17 @@ void changeInputAddress(String s){
     if (Integer.parseInt(port) > 1024 && Integer.parseInt(port) < 65535){
       addressString = ip;
       oscPort = Integer.parseInt(port);
-      augmenta.unbind();
-      augmenta=null;
-      augmenta= new AugmentaP5(this, 50000);
-      sendingAddress = new NetAddress(addressString, oscPort);
-      if (sendingAddress.isvalid()){
-        inputIsValid = true; 
+      if(augmenta != null) {
+        augmenta.unbind();
+        augmenta=null;
+        augmenta= new AugmentaP5(this, 50000);
+        sendingAddress = new NetAddress(addressString, oscPort);
+        if (sendingAddress.isvalid()){
+          inputIsValid = true;
+        }
       }
     }
   }
-  
 }
 
 void forceBroadcast(int v){
