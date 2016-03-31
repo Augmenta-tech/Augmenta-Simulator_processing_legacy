@@ -57,6 +57,9 @@ float x, oldX = 0;
 float y, oldY = 0;
 float accX, accY; // acceleration
 float velX, velY; // velocity
+float maxVel = 2;
+float accFactor = 0.1;
+float friction = 0.05;
 float t = 0; // time
 int age = 0;
 int sceneAge = 0;
@@ -153,19 +156,16 @@ void draw() {
     accX = 0;
     accY = 0;
     // Update acceleration
-    if ( upKey ) { accY-=0.1; }
-    if ( downKey ) { accY+=0.1; }
-    if ( leftKey ) { accX-=0.1; }
-    if ( rightKey ) { accX+=0.1; }
-    // Set maximum velocity
-    float maxVel = 2;
-    if( shiftKey ){ maxVel = 10; }
+    if ( upKey ) { accY-=accFactor; }
+    if ( downKey ) { accY+=accFactor; }
+    if ( leftKey ) { accX-=accFactor; }
+    if ( rightKey ) { accX+=accFactor; }
     // Update velocity
     if( abs(velX) < maxVel) { velX+=accX; }
     if( abs(velY) < maxVel) { velY+=accY; }
     // Decelerate
-    if ( !upKey && !downKey ) { velY*=.95; }
-    if ( !leftKey && !rightKey ) { velX*=.95; }
+    if ( !upKey && !downKey ) { velY*=(1-friction); }
+    if ( !leftKey && !rightKey ) { velX*=(1-friction); }
     // Update position
     x+=velX;
     y+=velY;

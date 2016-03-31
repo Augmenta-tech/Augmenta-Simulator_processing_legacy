@@ -112,6 +112,26 @@ void setUI() {
       .setText("Draw")
       .setPosition(34, 138)
       ;
+      
+  cp5.addTextlabel("Inertia settings")
+      .setText("Inertia settings")
+      .setPosition(14, 180)
+      ;
+  cp5.addSlider("maxVel")
+   .setLabel("Maximum velocity")
+   .setPosition(14,200)
+   .setRange(0,8)
+   ;
+  cp5.addSlider("accFactor")
+   .setLabel("Acceleration factor")
+   .setPosition(14,220)
+   .setRange(0,1)
+   ;
+  cp5.addSlider("friction")
+   .setLabel("Friction")
+   .setPosition(14,240)
+   .setRange(0,0.7)
+   ;
 }
 
 void changeInputAddress(String s){
