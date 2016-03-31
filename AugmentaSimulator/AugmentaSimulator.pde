@@ -48,6 +48,7 @@ String defaultSettingsFile = "Simulator-settings";
 // Key modifiers
 boolean cmdKey = false;
 boolean shiftKey = false;
+boolean ctrlKey = false;
 boolean upKey = false;
 boolean downKey = false;
 boolean leftKey = false;
@@ -157,7 +158,7 @@ void draw() {
     accY = 0;
     // Update acceleration
     float acc = accFactor;
-    if(cmdKey){ acc/=2; }
+    if(ctrlKey || cmdKey){ acc/=2; }
     if ( upKey ) { accY-=acc; }
     if ( downKey ) { accY+=acc; }
     if ( leftKey ) { accX-=acc; }

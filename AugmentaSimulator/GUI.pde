@@ -136,8 +136,14 @@ void setUI() {
       .setText("Hold [SHIFT] for twice velocity")
       .setPosition(14, 260)
       ;
+  String ctrlKeyStr = "";
+  if (platform == MACOSX) {
+    ctrlKeyStr = "CMD";
+  } else {
+    ctrlKeyStr = "CTRL";
+  }
   cp5.addTextlabel("cmd")
-      .setText("Hold [CMD] for half acceleration")
+      .setText("Hold ["+ctrlKeyStr+"] for half acceleration")
       .setPosition(14, 280)
       ;
 }

@@ -25,12 +25,9 @@ void mouseDragged() {
 }
 
 void keyPressed() {
-  if (keyCode == 157 || key == CONTROL){
-    cmdKey = true;
-  } 
-  if (keyCode == 16 || key == SHIFT) {
-    shiftKey = true;
-  }
+  if (keyCode == 157 || key == CONTROL){ cmdKey = true; } 
+  if (keyCode == 16 || key == SHIFT) { shiftKey = true; }
+  if (keyCode == 17) { ctrlKey = true; }
   if (keyCode == UP) { upKey = true; } 
   if (keyCode == DOWN) { downKey = true; } 
   if (keyCode == LEFT) { leftKey = true; } 
@@ -94,11 +91,9 @@ void keyPressed() {
 }
 
 void keyReleased(){
-  if (keyCode == 157 || key == CONTROL){
-    cmdKey = false;
-  } else if (keyCode == 16 || key == SHIFT) {
-    shiftKey = false;
-  }
+  if (keyCode == 157 || key == CONTROL){ cmdKey = false; } 
+  if (keyCode == 16 || key == SHIFT) { shiftKey = false; }
+  if (keyCode == 17) { ctrlKey = false; }
   if (keyCode == UP) { upKey = false; } 
   if (keyCode == DOWN) { downKey = false; } 
   if (keyCode == LEFT) { leftKey = false; } 
