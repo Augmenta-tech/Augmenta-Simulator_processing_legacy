@@ -27,11 +27,17 @@ void mouseDragged() {
 void keyPressed() {
   if (keyCode == 157 || key == CONTROL){
     cmdKey = true;
-  } else if (keyCode == 16 || key == SHIFT) {
+  } 
+  if (keyCode == 16 || key == SHIFT) {
     shiftKey = true;
   }
+  if (keyCode == UP) { upKey = true; } 
+  if (keyCode == DOWN) { downKey = true; } 
+  if (keyCode == LEFT) { leftKey = true; } 
+  if (keyCode == RIGHT) { rightKey = true; }
+
   // Stop/Start the movement of the point
-  else if (key == 'm' || key == 'M') {
+  if (key == 'm' || key == 'M') {
     moving=!moving;
     movingBox.setState(moving);
   } else if (key == 's' || key == 'S') {
@@ -93,4 +99,8 @@ void keyReleased(){
   } else if (keyCode == 16 || key == SHIFT) {
     shiftKey = false;
   }
+  if (keyCode == UP) { upKey = false; } 
+  if (keyCode == DOWN) { downKey = false; } 
+  if (keyCode == LEFT) { leftKey = false; } 
+  if (keyCode == RIGHT) { rightKey = false; }
 }

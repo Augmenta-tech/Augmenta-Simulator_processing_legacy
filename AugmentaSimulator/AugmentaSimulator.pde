@@ -48,9 +48,15 @@ String defaultSettingsFile = "Simulator-settings";
 // Key modifiers
 boolean cmdKey = false;
 boolean shiftKey = false;
+boolean upKey = false;
+boolean downKey = false;
+boolean leftKey = false;
+boolean rightKey = false;
 
 float x, oldX = 0;
 float y, oldY = 0;
+float accX, accY; // acceleration
+float velX, velY; // velocity
 float t = 0; // time
 int age = 0;
 int sceneAge = 0;
@@ -142,22 +148,33 @@ void draw() {
       t = t + direction*TWO_PI/70; // 70 inc
       t = t % TWO_PI;
     }
-  }
-
-  if (keyPressed) {
-    int increment = 1;
-    if (shiftKey) {
-      increment = 10;
-    }
-    if (keyCode == UP) {
-      y-=increment;
-    } else if (keyCode == DOWN) {
-      y+=increment;
-    } else if (keyCode == LEFT) {
-      x-=increment;
-    } else if (keyCode == RIGHT) {
-      x+=increment;
-    }
+    
+    // Inertia and friction
+    accX = 0;
+    accY = 0;
+    // Update acceleration
+    if ( upKey ) { accY-=0.1; }
+    if ( downKey ) { accY+=0.1; }
+    if ( leftKey ) { accX-=0.1; }
+    if ( rightKey ) { accX+=0.1; }
+    // Set maximum velocity
+    float maxVel = 2;
+    if( shiftKey ){ maxVel = 10; }
+    // Update velocity
+    if( abs(velX) < maxVel) { velX+=accX; }
+    if( abs(velY) < maxVel) { velY+=accY; }
+    // Decelerate
+    if ( !upKey && !downKey ) { velY*=.95; }
+    if ( !leftKey && !rightKey ) { velX*=.95; }
+    // Update position
+    x+=velX;
+    y+=velY;
+  } 
+  // mousePressed
+  else {
+    // Stop inertial movement
+    velX = 0;
+    velY = 0;
   }
 
   // Draw disk
