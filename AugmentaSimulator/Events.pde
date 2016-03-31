@@ -27,6 +27,8 @@ void mouseDragged() {
 void keyPressed() {
   if (keyCode == 157 || key == CONTROL){
     cmdKey = true;
+  } else if (keyCode == 16 || key == SHIFT) {
+    shiftKey = true;
   }
   // Stop/Start the movement of the point
   else if (key == 'm' || key == 'M') {
@@ -88,5 +90,7 @@ void keyPressed() {
 void keyReleased(){
   if (keyCode == 157 || key == CONTROL){
     cmdKey = false;
+  } else if (keyCode == 16 || key == SHIFT) {
+    shiftKey = false;
   }
 }

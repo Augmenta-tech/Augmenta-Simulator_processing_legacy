@@ -47,6 +47,7 @@ Toggle drawBox;
 String defaultSettingsFile = "Simulator-settings";
 // Key modifiers
 boolean cmdKey = false;
+boolean shiftKey = false;
 
 float x, oldX = 0;
 float y, oldY = 0;
@@ -142,6 +143,23 @@ void draw() {
       t = t % TWO_PI;
     }
   }
+
+  if (keyPressed) {
+    int increment = 1;
+    if (shiftKey) {
+      increment = 10;
+    }
+    if (keyCode == UP) {
+      y-=increment;
+    } else if (keyCode == DOWN) {
+      y+=increment;
+    } else if (keyCode == LEFT) {
+      x-=increment;
+    } else if (keyCode == RIGHT) {
+      x+=increment;
+    }
+  }
+
   // Draw disk
   if (send) {
     fill(255);
