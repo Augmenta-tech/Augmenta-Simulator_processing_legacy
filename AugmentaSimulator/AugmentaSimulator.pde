@@ -42,6 +42,8 @@ Toggle movingBox;
 Toggle generateBox;
 Textfield generateCountBox;
 Toggle drawBox;
+Toggle inertiaBox;
+Accordion accordion;
 
 // Save/Load
 String defaultSettingsFile = "Simulator-settings";
@@ -76,6 +78,7 @@ Boolean moving = false;
 Boolean generate = false;
 Boolean draw = true;
 Boolean generateHasChanged = false;
+Boolean useInertia = false;
 
 // Array of TestPerson points
 int generateCount = 10;
@@ -155,33 +158,47 @@ void draw() {
     }
     
     // Inertia and friction
-    accX = 0;
-    accY = 0;
-    // Update acceleration
-    float acc = accFactor;
-    if(ctrlKey || cmdKey){ acc/=2; }
-    if ( upKey ) { accY-=acc; }
-    if ( downKey ) { accY+=acc; }
-    if ( leftKey ) { accX-=acc; }
-    if ( rightKey ) { accX+=acc; }
-    // Update velocity
-    float maxVelocity = maxVel;
-    if(shiftKey){ maxVelocity*=2; }
-    if( abs(velX) < maxVelocity) { velX+=accX; }
-    if( abs(velY) < maxVelocity) { velY+=accY; }
-    // Decelerate
-    if ( (!upKey && !downKey) || (abs(velY) > maxVelocity)) { velY*=(1-friction); }
-    if ( (!leftKey && !rightKey) || (abs(velX) > maxVelocity)) { velX*=(1-friction); }
-    // Update position
-    x+=velX;
-    y+=velY;
+    if(useInertia){
+      accX = 0;
+      accY = 0;
+      // Update acceleration
+      float acc = accFactor;
+      if(ctrlKey || cmdKey){ acc/=2; }
+      if ( upKey ) { accY-=acc; }
+      if ( downKey ) { accY+=acc; }
+      if ( leftKey ) { accX-=acc; }
+      if ( rightKey ) { accX+=acc; }
+      // Update velocity
+      float maxVelocity = maxVel;
+      if(shiftKey){ maxVelocity*=2; }
+      if( abs(velX) < maxVelocity) { velX+=accX; }
+      if( abs(velY) < maxVelocity) { velY+=accY; }
+      // Decelerate
+      if ( (!upKey && !downKey) || (abs(velY) > maxVelocity)) { velY*=(1-friction); }
+      if ( (!leftKey && !rightKey) || (abs(velX) > maxVelocity)) { velX*=(1-friction); }
+      // Update position
+      x+=velX;
+      y+=velY;
+    } 
+    // No inertia but control with arrows
+    else {
+      float speed = maxVel;
+      if(ctrlKey || cmdKey){ speed/=2; }
+      else if(shiftKey){ speed*=2; }
+      if ( upKey ) { y-=speed; }
+      if ( downKey ) { y+=speed; }
+      if ( leftKey ) { x-=speed; }
+      if ( rightKey ) { x+=speed; }
+    }
   } 
   // mousePressed
   else {
     // Inertial movement
-    // Compute velocity based on mouse movement
-    velX = mouseX - oldMouseX;
-    velY = mouseY - oldMouseY;
+    if(useInertia){
+      // Compute velocity based on mouse movement
+      velX = mouseX - oldMouseX;
+      velY = mouseY - oldMouseY;
+    }
   }
 
   // Draw disk

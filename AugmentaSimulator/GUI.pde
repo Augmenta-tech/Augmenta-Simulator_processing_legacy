@@ -112,29 +112,47 @@ void setUI() {
       .setText("Draw")
       .setPosition(34, 138)
       ;
-      
-  cp5.addTextlabel("Inertia settings")
-      .setText("Inertia settings")
-      .setPosition(14, 180)
+  
+  Group inertiaGroup = cp5.addGroup("Inertia settings")
+                .setBackgroundColor(color(0, 64))
+                .setBackgroundHeight(150)
+                ;
+  
+  inertiaBox = cp5.addToggle("changeInertia")
+                .setPosition(6, 6)
+                .setSize(15, 15)
+                .setLabel("")
+                .moveTo(inertiaGroup)
+                ;
+  inertiaBox.setState(useInertia);
+  cp5.addTextlabel("labelInertia")
+      .setText("Use inertia")
+      .setPosition(26, 10)
+      .moveTo(inertiaGroup)
       ;
+      
   cp5.addSlider("maxVel")
    .setLabel("Maximum velocity")
-   .setPosition(14,200)
+   .setPosition(6,30)
    .setRange(0,8)
+   .moveTo(inertiaGroup)
    ;
   cp5.addSlider("accFactor")
    .setLabel("Acceleration factor")
-   .setPosition(14,220)
+   .setPosition(6,50)
    .setRange(0,1)
+   .moveTo(inertiaGroup)
    ;
   cp5.addSlider("friction")
    .setLabel("Friction")
-   .setPosition(14,240)
+   .setPosition(6,70)
    .setRange(0,0.7)
+   .moveTo(inertiaGroup)
    ;
   cp5.addTextlabel("shift")
       .setText("Hold [SHIFT] for twice velocity")
-      .setPosition(14, 260)
+      .setPosition(6, 90)
+      .moveTo(inertiaGroup)
       ;
   String ctrlKeyStr = "";
   if (platform == MACOSX) {
@@ -144,8 +162,15 @@ void setUI() {
   }
   cp5.addTextlabel("cmd")
       .setText("Hold ["+ctrlKeyStr+"] for half acceleration")
-      .setPosition(14, 280)
+      .setPosition(6, 110)
+      .moveTo(inertiaGroup)
       ;
+      
+  accordion = cp5.addAccordion("Accordion")
+                 .setPosition(width - 210 - 14, 15)
+                 .setWidth(210)
+                 .addItem(inertiaGroup)
+                 ;
 }
 
 void changeInputAddress(String s){
@@ -277,6 +302,9 @@ void changeMoving(boolean b) {
 }
 void changeDraw(boolean b) {
   draw = b;
+}
+void changeInertia(boolean b) {
+  useInertia = b;
 }
 
 void adjustSceneSize() {
