@@ -56,6 +56,7 @@ boolean rightKey = false;
 
 float x, oldX = 0;
 float y, oldY = 0;
+int oldMouseX, oldMouseY; // previous mouse position
 float accX, accY; // acceleration
 float velX, velY; // velocity
 float maxVel = 2;
@@ -177,9 +178,10 @@ void draw() {
   } 
   // mousePressed
   else {
-    // Stop inertial movement
-    velX = 0;
-    velY = 0;
+    // Inertial movement
+    // Compute velocity based on mouse movement
+    velX = mouseX - oldMouseX;
+    velY = mouseY - oldMouseY;
   }
 
   // Draw disk
@@ -235,6 +237,9 @@ void draw() {
   } else {
     inputError.setVisible(true); 
   }
+  
+  oldMouseX = mouseX;
+  oldMouseY = mouseY;
 }
 
 public void updateGeneration(){
