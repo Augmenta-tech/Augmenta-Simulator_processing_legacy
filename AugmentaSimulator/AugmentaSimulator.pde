@@ -156,16 +156,20 @@ void draw() {
     accX = 0;
     accY = 0;
     // Update acceleration
-    if ( upKey ) { accY-=accFactor; }
-    if ( downKey ) { accY+=accFactor; }
-    if ( leftKey ) { accX-=accFactor; }
-    if ( rightKey ) { accX+=accFactor; }
+    float acc = accFactor;
+    if(cmdKey){ acc/=2; }
+    if ( upKey ) { accY-=acc; }
+    if ( downKey ) { accY+=acc; }
+    if ( leftKey ) { accX-=acc; }
+    if ( rightKey ) { accX+=acc; }
     // Update velocity
-    if( abs(velX) < maxVel) { velX+=accX; }
-    if( abs(velY) < maxVel) { velY+=accY; }
+    float maxVelocity = maxVel;
+    if(shiftKey){ maxVelocity*=2; }
+    if( abs(velX) < maxVelocity) { velX+=accX; }
+    if( abs(velY) < maxVelocity) { velY+=accY; }
     // Decelerate
-    if ( !upKey && !downKey ) { velY*=(1-friction); }
-    if ( !leftKey && !rightKey ) { velX*=(1-friction); }
+    if ( (!upKey && !downKey) || (abs(velY) > maxVelocity)) { velY*=(1-friction); }
+    if ( (!leftKey && !rightKey) || (abs(velX) > maxVelocity)) { velX*=(1-friction); }
     // Update position
     x+=velX;
     y+=velY;

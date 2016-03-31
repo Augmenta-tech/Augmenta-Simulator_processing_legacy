@@ -132,6 +132,14 @@ void setUI() {
    .setPosition(14,240)
    .setRange(0,0.7)
    ;
+  cp5.addTextlabel("shift")
+      .setText("Hold [SHIFT] for twice velocity")
+      .setPosition(14, 260)
+      ;
+  cp5.addTextlabel("cmd")
+      .setText("Hold [CMD] for half acceleration")
+      .setPosition(14, 280)
+      ;
 }
 
 void changeInputAddress(String s){
