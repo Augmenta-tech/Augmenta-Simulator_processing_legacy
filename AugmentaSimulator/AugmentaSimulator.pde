@@ -98,7 +98,7 @@ void setup() {
   y=height/2;
   frameRate(30);
   
-  // Allow window to be resized
+  // Allow window to be resized but keep ratio
   /*if (surface != null) {
     surface.setResizable(true);
   }*/
