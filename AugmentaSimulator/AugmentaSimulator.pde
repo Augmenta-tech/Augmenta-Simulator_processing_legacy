@@ -120,8 +120,7 @@ void setup() {
   movablePerson.highest.x = movablePerson.centroid.x + vecHighest.x;
   movablePerson.highest.y = movablePerson.centroid.y + vecHighest.y;
   movablePerson.highest.z = random(0.4, 0.6);
-  
-  updateGeneration();
+
 }
 
 void draw() {
