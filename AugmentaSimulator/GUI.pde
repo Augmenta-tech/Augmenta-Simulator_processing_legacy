@@ -178,8 +178,6 @@ void changeInputAddress(String s){
   println("string : " + s); 
   if(s != "") {
     
-    inputIsValid = false; // consider false until proven OK
-    
     String[] ints = split(s, ':');
     String ip, port;
     try{
@@ -190,7 +188,10 @@ void changeInputAddress(String s){
       return; 
     }
 
-    if (Integer.parseInt(port) != oscPort || ip != addressString) {
+    if (Integer.parseInt(port) != oscPort || !ip.equals(addressString)) {
+      // Address or port has changed, so check if new settings are valid
+      inputIsValid = false; // consider false until proven OK
+      
       if (Integer.parseInt(port) > 1024 && Integer.parseInt(port) < 65535){
         addressString = ip;
         oscPort = Integer.parseInt(port);
@@ -199,8 +200,8 @@ void changeInputAddress(String s){
           augmenta=null;
           augmenta= new AugmentaP5(this, 50000);
           sendingAddress = new NetAddress(addressString, oscPort);
-          if (!sendingAddress.isvalid()){
-            inputIsValid = false;
+          if (sendingAddress.isvalid()){
+            inputIsValid = true;
           }
         } else {
           // address is valid if it has been parsed correctly but augmenta was null (startup case)
@@ -208,6 +209,7 @@ void changeInputAddress(String s){
         }
       }
     }
+    // Else, address and port didn't change, so do nothing
   }
 }
 
