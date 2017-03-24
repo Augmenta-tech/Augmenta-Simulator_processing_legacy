@@ -111,7 +111,7 @@ void setup() {
   applySettings();
    
   // OSC network com
-  augmenta = new AugmentaP5(this, 50000);
+  augmenta = new AugmentaP5(this, 36278); // Yo protocol daemon port
   sendingAddress = new NetAddress(addressString, oscPort);
   PVector pos = new PVector(0.5f, 0.5f);
   float size = 0.1f;

@@ -1,4 +1,12 @@
-// Keyboard and mouse events
+import oscP5.*; // this can certainly be deleted once augmenta lib will be updated (see below) 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
+NetAddress myRemoteLocation;
+
+// Keyboard, mouse and osc events
 
 void mouseDragged() {
   oldX = x;
@@ -98,4 +106,81 @@ void keyReleased(){
   if (keyCode == DOWN) { downKey = false; } 
   if (keyCode == LEFT) { leftKey = false; } 
   if (keyCode == RIGHT) { rightKey = false; }
+}
+
+// To make this work we have to update Augmenta library to invoke another oscEvent event
+void oscEvent(OscMessage _oscMessage) {
+  
+  StringBuilder sb = new StringBuilder();
+  InetAddress ip = null;
+  
+  if(_oscMessage.checkAddrPattern("/info"))
+  {
+    
+    println("Received " + _oscMessage.addrPattern() + " " + _oscMessage.get(0).toString() + " " + _oscMessage.get(1).toString());
+    
+    // Parse osc message
+    String remoteIp = _oscMessage.get(0).stringValue();
+    int remotePort = _oscMessage.get(1).intValue();
+    myRemoteLocation = new NetAddress(remoteIp,remotePort);
+    
+    // Get own ip and mac address
+    try
+    {
+      ip = InetAddress.getLocalHost();
+      println("Current IP address: " + ip.getHostAddress());
+      NetworkInterface network = NetworkInterface.getByInetAddress(ip);
+   
+      byte[] mac = network.getHardwareAddress();
+   
+      print("Current MAC address: ");
+   
+      for (int i = 0; i < mac.length; i++)
+      {
+        sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
+      }
+      println(sb.toString());
+    }
+    catch (UnknownHostException e)
+    {
+      e.printStackTrace();
+    }
+    catch (SocketException e)
+    {
+      e.printStackTrace();
+    }
+    
+    // Send osc message
+    
+     /* Protocol :
+     *
+     * /info
+     * [0] - daemonIp (string)
+     * [1] - name(string) ==> nicename, configurable via web interface (ex: "cam lointain")
+     * [2] - mac (string)
+     * [3] - software version (version_date) (string)
+     * [4] - current settings file name (string)
+     * [5] - type (grabber-pipe si augmenta cam)(string)
+     * [6] - plane status (string : "Off", "Manual","Auto-Found","Auto-NotFound")
+     *
+     */
+
+    OscMessage myMessage = new OscMessage("/info");
+    myMessage.add(ip.getHostAddress());
+    myMessage.add("Simulator");
+    myMessage.add(sb.toString());
+    myMessage.add("0.1");
+    myMessage.add("N/A");
+    myMessage.add("Simulator Processing");
+    myMessage.add("N/A");
+
+    // send the message
+    oscP5.send(myMessage, myRemoteLocation);
+    
+  } else {
+    /* print the address pattern and the typetag of the received OscMessage */
+    print("### received an osc message.");
+    print(" addrpattern: "+_oscMessage.addrPattern());
+    println(" typetag: "+_oscMessage.typetag());
+  }
 }
