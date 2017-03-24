@@ -175,7 +175,7 @@ void oscEvent(OscMessage _oscMessage) {
     myMessage.add("N/A");
 
     // send the message
-    oscP5.send(myMessage, myRemoteLocation);
+    //oscP5.send(myMessage, myRemoteLocation);
     
   } else {
     /* print the address pattern and the typetag of the received OscMessage */
